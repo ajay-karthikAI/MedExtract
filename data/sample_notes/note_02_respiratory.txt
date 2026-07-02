@@ -1,0 +1,14 @@
+SYNTHETIC NOTE — fictional patient, for testing only.
+
+Chief complaint: Cough and wheezing.
+
+HPI: 34-year-old with known asthma reporting three days of worsening cough,
+wheezing, and mild shortness of breath after an upper respiratory infection.
+Low-grade fever at home. Using albuterol inhaler more frequently than usual.
+
+PMH: Asthma, seasonal allergies.
+
+Medications: Albuterol inhaler PRN.
+
+Plan: Spirometry today. Short course of prednisone. Chest x-ray to rule out
+pneumonia. Return if symptoms worsen.

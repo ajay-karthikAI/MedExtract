@@ -1,0 +1,14 @@
+SYNTHETIC NOTE — fictional patient, for testing only.
+
+Chief complaint: Burning with urination.
+
+HPI: 27-year-old reporting two days of dysuria and urinary frequency.
+No fever, no back pain, no nausea.
+
+PMH: None significant.
+
+Medications: None.
+
+Plan: Urinalysis in office consistent with urinary tract infection.
+Start nitrofurantoin 100mg BID for five days. Push fluids. Return or call
+if fever or back pain develops.

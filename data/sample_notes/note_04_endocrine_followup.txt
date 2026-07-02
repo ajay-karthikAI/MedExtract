@@ -1,0 +1,16 @@
+SYNTHETIC NOTE — fictional patient, for testing only.
+
+Chief complaint: Routine follow-up.
+
+HPI: 62-year-old here for follow-up of hypothyroidism and depression.
+Reports improved energy since levothyroxine dose adjustment. Mood stable
+on sertraline. Mild fatigue persists. Denies chest pain, palpitations,
+or dizziness.
+
+PMH: Hypothyroidism, major depressive disorder, GERD.
+
+Medications: Levothyroxine 75mcg daily, sertraline 50mg daily,
+omeprazole 20mg daily.
+
+Plan: TSH and blood work today. Continue current regimen. Follow up in
+three months.

@@ -1,0 +1,14 @@
+SYNTHETIC NOTE — fictional patient, for testing only.
+
+Chief complaint: Chest pain and shortness of breath.
+
+HPI: 58-year-old presenting with intermittent chest pain for two days,
+worse with exertion, accompanied by shortness of breath and fatigue.
+Denies fever or cough.
+
+PMH: Hypertension, type 2 diabetes, hyperlipidemia.
+
+Medications: Lisinopril 10mg daily, metformin 500mg BID, atorvastatin 20mg nightly.
+
+Plan: ECG and chest x-ray today. Troponin and CBC ordered. Cardiology
+referral if abnormal. Continue current medications.

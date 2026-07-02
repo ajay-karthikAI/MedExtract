@@ -1,0 +1,15 @@
+SYNTHETIC NOTE — fictional patient, for testing only.
+
+Chief complaint: Recurrent headaches.
+
+HPI: 41-year-old with history of migraine reporting increased headache
+frequency over the past month, now two to three episodes weekly, with
+nausea and light sensitivity. Sumatriptan provides partial relief.
+Denies fever, vision changes, or weakness.
+
+PMH: Migraine, anxiety.
+
+Medications: Sumatriptan 50mg PRN, ibuprofen PRN.
+
+Plan: Discussed headache diary and trigger avoidance. Consider
+prophylactic therapy at next visit. MRI if red-flag symptoms develop.

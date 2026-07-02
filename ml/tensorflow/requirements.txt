@@ -1,0 +1,4 @@
+tensorflow>=2.16
+transformers>=4.42
+datasets>=2.20
+seqeval>=1.2

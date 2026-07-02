@@ -1,0 +1,6 @@
+jax>=0.4.28
+flax>=0.8
+optax>=0.2
+transformers>=4.42
+datasets>=2.20
+seqeval>=1.2

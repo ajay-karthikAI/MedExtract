@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# Node
+node_modules/
+.next/
+out/
+npm-debug.log*
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+
+# ML artifacts
+ml/**/checkpoints/
+ml/**/runs/
+*.pt
+*.pth
+*.h5
+*.ckpt
+*.msgpack
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# NEVER commit real patient data
+data/private/
