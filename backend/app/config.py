@@ -3,7 +3,10 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://medextract:medextract@localhost:5433/medextract"
-    cors_origins: str = "http://localhost:3000,http://localhost:3100"
+    cors_origins: str = (
+        "http://localhost:3000,http://localhost:3100,http://localhost:3101,"
+        "http://127.0.0.1:3000,http://127.0.0.1:3100,http://127.0.0.1:3101"
+    )
     ml_dir: str = ""  # path to the repo's ml/ directory; empty = auto-detect
     data_dir: str = ""  # path to repo data/ directory; empty = auto-detect
 

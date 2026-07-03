@@ -20,7 +20,7 @@ services:
     build: ./backend
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://medextract:medextract@db:5432/medextract}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3100}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3100,http://localhost:3101,http://127.0.0.1:3100,http://127.0.0.1:3101}
       ML_DIR: ${ML_DIR:-/code/ml}
       DATA_DIR: ${DATA_DIR:-/code/data}
     ports:
