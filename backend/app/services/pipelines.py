@@ -8,15 +8,13 @@ the rule-based placeholder, tagged with the requested framework.
 import importlib
 import logging
 import sys
-from pathlib import Path
+from threading import Lock
 
-from app.config import settings
 from app.schemas import ExtractionResult, Framework, ModelInfo
 from app.services import extraction as rule_based
+from app.services.paths import ml_dir as resolve_ml_dir
 
 logger = logging.getLogger(__name__)
-
-_DEFAULT_ML_DIR = Path(__file__).resolve().parents[3] / "ml"
 
 # framework -> (inference module under ml/, description when available)
 _ML_PIPELINES: dict[str, tuple[str, str]] = {
@@ -42,28 +40,32 @@ _ML_PIPELINES: dict[str, tuple[str, str]] = {
 
 _loaded: dict[str, object] = {}  # framework -> inference module
 _errors: dict[str, str] = {}  # framework -> first load failure (probed once)
+_load_lock = Lock()
 
 
 def _load(framework: str) -> None:
     if framework in _loaded or framework in _errors or framework not in _ML_PIPELINES:
         return
-    module_path, _ = _ML_PIPELINES[framework]
-    try:
-        ml_dir = Path(settings.ml_dir) if settings.ml_dir else _DEFAULT_ML_DIR
-        if str(ml_dir) not in sys.path:
-            sys.path.insert(0, str(ml_dir))
-        module = importlib.import_module(module_path)
-        if not module.is_available():
-            package = module_path.split(".")[0]
-            raise RuntimeError(
-                f"ML dependencies not installed — pip install -r ml/{package}/requirements.txt"
+    with _load_lock:
+        if framework in _loaded or framework in _errors or framework not in _ML_PIPELINES:
+            return
+        module_path, _ = _ML_PIPELINES[framework]
+        try:
+            ml_dir = resolve_ml_dir()
+            if str(ml_dir) not in sys.path:
+                sys.path.insert(0, str(ml_dir))
+            module = importlib.import_module(module_path)
+            if not module.is_available():
+                package = module_path.split(".")[0]
+                raise RuntimeError(
+                    f"ML dependencies not installed — pip install -r ml/{package}/requirements.txt"
+                )
+            _loaded[framework] = module
+        except Exception as exc:
+            _errors[framework] = str(exc)
+            logger.warning(
+                "%s pipeline unavailable, using rule-based fallback: %s", framework, exc
             )
-        _loaded[framework] = module
-    except Exception as exc:
-        _errors[framework] = str(exc)
-        logger.warning(
-            "%s pipeline unavailable, using rule-based fallback: %s", framework, exc
-        )
 
 
 def extract(text: str, framework: Framework) -> ExtractionResult:
@@ -95,5 +97,5 @@ def model_info(framework: Framework) -> ModelInfo:
         framework=framework,
         model_name=f"{framework}-{rule_based.MODEL_NAME}",
         status="placeholder",
-        description=f"Rule-based dictionary extractor standing in for a {framework} NER model.{reason}",
+        description=f"Rule-based dictionary extractor standing in for the {framework} pipeline.{reason}",
     )

@@ -1,80 +1,117 @@
 # MedExtract
 
-A clinical notes NLP application that extracts structured medical information from free-text doctor notes.
+**Multi-framework clinical NLP system for extracting medical entities, suggesting ICD-10 codes, and generating patient-friendly summaries from clinical notes.**
 
-> ⚠️ **Disclaimer:** MedExtract is a development/research scaffold. It is **not** a medical device, does not provide medical advice, and must not be used for clinical decision-making. ICD-10 suggestions are heuristic hints for human review only. This repository contains **synthetic sample notes only — never commit real patient data (PHI)**.
+MedExtract is a portfolio-ready clinical NLP demo that turns free-text clinical notes into structured outputs. It supports a FastAPI backend, a Next.js dashboard, PostgreSQL persistence, benchmark views, and interchangeable PyTorch, TensorFlow, JAX, and rule-based extraction paths.
 
-## What it does
+> **Healthcare AI safety disclaimer:** MedExtract is a development and research project. It is not a medical device, does not provide medical advice, and must not be used for diagnosis, treatment, billing, or clinical decision-making. All extracted entities, ICD-10 suggestions, confidence scores, and patient-facing summaries require review by qualified human professionals.
+>
+> **Synthetic data disclaimer:** This repository is designed for synthetic and fictional clinical notes only. Do not commit, upload, or process real patient information, protected health information (PHI), or personally identifiable information (PII).
 
-Given a free-text clinical note, MedExtract extracts:
+## Highlights
 
-1. **Medical conditions** (e.g., hypertension, type 2 diabetes)
-2. **Symptoms** (e.g., chest pain, shortness of breath)
-3. **Medications** (e.g., metformin, lisinopril)
-4. **Procedures** (e.g., ECG, chest X-ray)
-5. **Suggested ICD-10 codes** (heuristic, for human review)
-6. **A plain-English patient summary**
+- Extracts conditions, symptoms, medications, and procedures from clinical notes.
+- Suggests ICD-10 codes as human-review hints.
+- Generates patient-friendly summaries from technical note content.
+- Supports text entry and PDF/TXT upload workflows.
+- Persists analyses, entities, ICD-10 suggestions, and history in PostgreSQL.
+- Compares PyTorch, TensorFlow, JAX, and fallback extraction behavior through a benchmark API and UI page.
+- Includes synthetic sample notes and a larger synthetic CSV dataset for demo and testing.
+
+## Demo Flow
+
+1. Paste or upload a fictional clinical note.
+2. Choose a framework: `pytorch`, `tensorflow`, or `jax`.
+3. Review extracted entities grouped by category.
+4. Inspect suggested ICD-10 codes and confidence estimates.
+5. Read the patient-friendly summary.
+6. Revisit prior analyses in history or compare framework latency in benchmarks.
 
 ## Architecture
 
-```
-┌─────────────┐     ┌──────────────┐     ┌──────────────┐
-│  Next.js    │ ──▶ │   FastAPI    │ ──▶ │  PostgreSQL  │
-│  frontend   │     │   backend    │     │              │
-│  :3100      │     │   :8010      │     │   :5433      │
-└─────────────┘     └──────┬───────┘     └──────────────┘
-                           │
-                    ┌──────▼───────┐
-                    │  ml/ models  │
-                    │ pytorch / tf │
-                    │    / jax     │
-                    └──────────────┘
+```mermaid
+flowchart LR
+    user[User / Portfolio Reviewer] --> ui[Next.js Frontend<br/>TypeScript + Tailwind<br/>localhost:3100]
+    ui --> api[FastAPI Backend<br/>Python + SQLAlchemy<br/>localhost:8010]
+    api --> db[(PostgreSQL<br/>notes, extractions,<br/>entities, ICD-10, benchmarks)]
+    api --> dispatch[Framework Dispatcher]
+    dispatch --> pt[PyTorch Pipeline<br/>HF token classification NER]
+    dispatch --> tf[TensorFlow Pipeline<br/>Keras classifier + lexicon extraction]
+    dispatch --> jax[JAX Pipeline<br/>Flax research benchmark path]
+    dispatch --> rules[Rule-based Fallback<br/>zero ML dependencies]
+    api --> docs[Swagger / OpenAPI<br/>/docs]
 ```
 
-## Repo layout
+More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
-```
+## Repository Layout
+
+```text
 MedExtract/
-├── backend/            # FastAPI app (API, extraction service, ORM models)
-├── frontend/           # Next.js + TypeScript + Tailwind UI
-├── db/init/            # PostgreSQL schema (applied on first container start)
+├── backend/                 # FastAPI app, routers, schemas, persistence, extraction services
+├── frontend/                # Next.js app, dashboard UI, history, benchmarks
+├── db/init/                 # PostgreSQL initialization SQL
+├── docs/                    # Portfolio documentation: architecture, API, models
+├── data/                    # Synthetic notes and generated synthetic CSV data
 ├── ml/
-│   ├── pytorch_pipeline/     # Working PyTorch NER pipeline (HF Transformers)
-│   ├── tensorflow_pipeline/  # Working TF/Keras classifier-assisted pipeline
-│   └── skeletons/            # Older per-framework training skeletons
-├── data/sample_notes/  # Synthetic notes (NO real patient data)
+│   ├── pytorch_pipeline/    # Hugging Face token-classification path
+│   ├── tensorflow_pipeline/ # Keras classifier-assisted path
+│   ├── jax_pipeline/        # Flax benchmark/research path
+│   └── skeletons/           # Older framework training skeletons
+├── screenshots/             # Portfolio screenshots and capture notes
 └── docker-compose.yml
 ```
 
-## Quick start (Docker)
+## Setup
+
+### Prerequisites
+
+- Docker Desktop or compatible Docker runtime
+- Python 3.12 for local backend development
+- Node.js 20+ for local frontend development
+
+### Run With Docker
 
 ```bash
 cp .env.example .env
-docker compose up --build
+docker compose up
 ```
 
-- Frontend: http://localhost:3100
-- API docs (Swagger): http://localhost:8010/docs
-- PostgreSQL: localhost:5433 (`medextract` / see `.env`)
+Use `docker compose up --build` after changing Dockerfiles or dependency manifests.
 
-Host ports default to 5433/8010/3100 to avoid clashing with services commonly
-already running on 5432/8000/3000. Override with `POSTGRES_PORT`,
-`BACKEND_PORT`, and `FRONTEND_PORT` in `.env` (keep `NEXT_PUBLIC_API_URL` and
-`CORS_ORIGINS` in sync).
+Default local URLs:
 
-## Local development (without Docker)
+| Service | URL |
+| --- | --- |
+| Frontend | http://localhost:3100 |
+| API | http://localhost:8010 |
+| Swagger docs | http://localhost:8010/docs |
+| PostgreSQL | localhost:5433 |
 
-### Backend
+The default host ports avoid common local conflicts with `5432`, `8000`, and `3000`. Override them in `.env` with `POSTGRES_PORT`, `BACKEND_PORT`, and `FRONTEND_PORT`. Keep `NEXT_PUBLIC_API_URL` and `CORS_ORIGINS` in sync with any port changes.
+
+Compose also sets `ML_DIR=/code/ml` and `DATA_DIR=/code/data` so the backend container can see the mounted framework pipelines and synthetic sample notes. On startup, the backend creates missing tables and applies small idempotent schema repairs for older local PostgreSQL volumes.
+
+### Run Locally
+
+Start PostgreSQL with Docker:
+
+```bash
+docker compose up db
+```
+
+Run the backend:
 
 ```bash
 cd backend
-python -m venv .venv && source .venv/bin/activate
+python3.12 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 export DATABASE_URL=postgresql+psycopg://medextract:medextract@localhost:5433/medextract
 uvicorn app.main:app --reload --port 8010
 ```
 
-### Frontend
+Run the frontend:
 
 ```bash
 cd frontend
@@ -82,59 +119,121 @@ npm install
 npm run dev
 ```
 
-## API overview
+Optional ML dependencies:
 
-| Method | Path                  | Description                                  |
-|--------|-----------------------|----------------------------------------------|
-| GET    | `/health`             | Liveness check                               |
-| POST   | `/analyze-note`       | Analyze a note (`{note, framework}`); persists request + results |
-| POST   | `/analyze-file`       | Analyze an uploaded PDF/TXT note (multipart: `file`, `framework`) |
-| GET    | `/models`             | Available extraction models per framework    |
-| GET    | `/history`            | Past analyses, newest first                  |
-| POST   | `/benchmarks/run`     | Benchmark all frameworks over the sample notes; persists results |
-| GET    | `/benchmarks`         | Stored benchmark runs, newest first          |
-| POST   | `/api/notes`          | Submit a note; runs extraction, persists both |
-| GET    | `/api/notes`          | List submitted notes                         |
-| GET    | `/api/notes/{id}`     | Get a note with its extraction               |
-| POST   | `/api/extract`        | Stateless extraction (nothing persisted)     |
+```bash
+pip install -r ml/pytorch_pipeline/requirements.txt
+pip install -r ml/tensorflow_pipeline/requirements.txt
+pip install -r ml/jax_pipeline/requirements.txt
+```
 
-Example:
+The slim Docker backend intentionally excludes large ML dependencies. If a requested framework cannot load, the API reports a `placeholder` model status and serves the rule-based fallback. Install optional ML dependencies only for local model experiments.
+
+## API Overview
+
+Interactive OpenAPI documentation is available at:
+
+```text
+http://localhost:8010/docs
+```
+
+Core endpoints:
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `GET` | `/health` | Liveness check |
+| `POST` | `/analyze-note` | Analyze and persist a clinical note |
+| `POST` | `/analyze-file` | Analyze and persist an uploaded PDF/TXT note |
+| `GET` | `/models` | Show active model status per framework |
+| `GET` | `/history` | List previous analyses |
+| `POST` | `/benchmarks/run` | Run all framework pipelines over sample notes |
+| `GET` | `/benchmarks` | List stored benchmark runs |
+| `POST` | `/api/extract` | Stateless legacy extraction |
+| `POST` | `/api/notes` | Legacy note creation + extraction |
+
+Full endpoint documentation: [docs/API.md](docs/API.md)
+
+Example request:
 
 ```bash
 curl -X POST http://localhost:8010/analyze-note \
-  -H 'Content-Type: application/json' \
-  -d '{"note": "Patient reports chest pain and shortness of breath. History of hypertension. Continue lisinopril 10mg. ECG ordered.", "framework": "pytorch"}'
+  -H "Content-Type: application/json" \
+  -d '{
+    "framework": "pytorch",
+    "note": "Synthetic note: Adult patient reports chest pain and shortness of breath. History of hypertension. Continue lisinopril. ECG ordered."
+  }'
 ```
 
-## Extraction pipeline
+## Model Comparison
 
-Extraction is dispatched per framework (`backend/app/services/pipelines.py`):
+| Framework | Role | Strengths | Current Limitations |
+| --- | --- | --- | --- |
+| PyTorch | Hugging Face token-classification NER path | Best fit for span-level entity extraction; can use fine-tuned checkpoints | Fresh clones need dependencies/checkpoints; pretrained fallback is weaker on terse clinical-note formatting |
+| TensorFlow | Keras note-category classifier + lexicon extractor | Lightweight classifier-assisted confidence scoring | Entity extraction remains lexicon-bound |
+| JAX | Flax research/benchmark twin | Useful for comparing multi-framework serving behavior | Research path, not intended for production deployment |
+| Rule-based fallback | Zero-dependency placeholder | Always available; predictable for demos and tests | Dictionary coverage only; no learned clinical language understanding |
 
-- **`framework="pytorch"`** → `ml/pytorch_pipeline/` — Hugging Face Transformers
-  token-classification NER (a fine-tuned checkpoint if you've run
-  `python -m pytorch_pipeline.train`, otherwise the pretrained
-  `d4data/biomedical-ner-all`). Requires `pip install -r ml/pytorch_pipeline/requirements.txt`.
-- **`framework="tensorflow"`** → `ml/tensorflow_pipeline/` — a Keras note-category
-  classifier plus lexicon entity extraction with model-assisted confidence.
-  Requires `pip install -r ml/tensorflow_pipeline/requirements.txt` and a trained
-  checkpoint (`python -m tensorflow_pipeline.train`) for the confidence boost.
-- **`framework="jax"`** → `ml/jax_pipeline/` — a Flax research twin of the
-  TensorFlow classifier (shared lexicon/dataset) for benchmarking, not
-  production. Requires `pip install -r ml/jax_pipeline/requirements.txt`.
-- **Any unavailable pipeline** → the **rule/dictionary-based placeholder** in
-  `backend/app/services/extraction.py`, which needs zero ML dependencies. The
-  slim Docker image excludes all ML deps, so the containerized backend serves
-  the placeholder for every framework.
+Full model notes: [docs/MODELS.md](docs/MODELS.md)
 
-`GET /models` reports which path each framework actually serves
-(`available` vs `placeholder`).
+## Data
 
-## Sample data
+This project includes fictional data only:
 
-`data/sample_notes/` contains fully synthetic notes written for this project. Do not add real clinical text.
+- `data/sample_notes/` - short synthetic notes for manual testing and benchmarking.
+- `data/synthetic_clinical_notes.csv` - generated synthetic clinical-note dataset with conditions, symptoms, medications, procedures, ICD-10 labels, and patient-friendly summaries.
+- `data/private/` is gitignored for local experiments and must not contain real PHI in shared environments.
+
+Do not use real clinical notes unless you have appropriate authorization, privacy controls, security review, data-use agreements, and de-identification procedures outside this demo repository.
+
+## Screenshots
+
+Use [screenshots/](screenshots/) for portfolio images such as:
+
+- Home/analyze screen
+- Entity extraction result view
+- History page
+- Benchmark comparison page
+- Swagger API docs
+
+The folder is tracked with capture notes so screenshots can be added without changing documentation structure.
 
 ## Testing
 
+Backend tests:
+
 ```bash
-cd backend && pytest
+cd backend
+python -m pytest
 ```
+
+Frontend typecheck:
+
+```bash
+cd frontend
+npx tsc --noEmit
+```
+
+## Limitations
+
+- ICD-10 suggestions are heuristic hints, not certified medical coding.
+- Negation handling is incomplete; phrases like "denies fever" may still surface entities.
+- Synthetic training and demo notes do not represent real-world clinical variation.
+- Entity normalization is basic and does not link to UMLS, SNOMED CT, RxNorm, or LOINC.
+- Confidence scores are approximate and should not be interpreted as calibrated probabilities.
+- The Docker backend uses a slim dependency set and may fall back to rule-based extraction.
+- There is no authentication, rate limiting, audit logging, or production security hardening.
+- PDF support requires an embedded text layer; scanned documents are not OCR processed.
+- Benchmark memory numbers are process-level estimates, not isolated model memory profiles.
+
+## Portfolio Positioning
+
+MedExtract demonstrates full-stack healthcare AI engineering across:
+
+- Clinical NLP pipeline design
+- Multi-framework model serving and fallback behavior
+- API design with validation and persistence
+- Database-backed analysis history
+- Benchmark instrumentation
+- Responsible AI documentation for healthcare-adjacent systems
+
+It is intentionally scoped as a transparent, synthetic-data demo rather than a production clinical system.

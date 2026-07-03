@@ -4,15 +4,16 @@ POST /benchmarks/run executes every framework over the synthetic sample notes
 (timed on the same serving path the API uses), persists the run to PostgreSQL,
 and returns it. GET /benchmarks lists stored runs, newest first.
 
-Memory numbers are best-effort: process-level RSS read via `ps`, so a
-framework's delta mostly reflects lazy model loading on its first run in the
-process — near zero if the model was already loaded by earlier requests.
+Memory numbers are best-effort: process-level RSS, so a framework's delta
+mostly reflects lazy model loading on its first run in the process — near zero
+if the model was already loaded by earlier requests.
 """
 
+import os
+import resource
 import statistics
 import subprocess
 import time
-from pathlib import Path
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
@@ -22,10 +23,9 @@ from app import models, schemas
 from app.database import get_db
 from app.routers.analyze import FRAMEWORKS
 from app.services import pipelines
+from app.services.paths import sample_notes_dir
 
 router = APIRouter(tags=["benchmarks"])
-
-_SAMPLE_NOTES_DIR = Path(__file__).resolve().parents[3] / "data" / "sample_notes"
 
 # Used when data/sample_notes/ isn't shipped with the deployment (e.g. Docker).
 _FALLBACK_NOTES = [
@@ -39,19 +39,36 @@ _FALLBACK_NOTES = [
 
 
 def _load_notes() -> list[str]:
+    notes_dir = sample_notes_dir()
     notes = [
         p.read_text()
-        for p in sorted(_SAMPLE_NOTES_DIR.glob("note_*.txt"))
+        for p in sorted(notes_dir.glob("note_*.txt"))
         if p.is_file()
     ]
     return notes or _FALLBACK_NOTES
 
 
 def _rss_mb() -> float | None:
-    """Current process RSS in MB via ps (macOS/Linux report KB); None if unavailable."""
+    """Current process RSS in MB; None if unavailable."""
     try:
-        import os
+        # Linux containers usually have /proc even when procps/ps is absent.
+        with open("/proc/self/status") as f:
+            for line in f:
+                if line.startswith("VmRSS:"):
+                    return round(int(line.split()[1]) / 1024, 1)
+    except Exception:
+        pass
 
+    try:
+        # macOS reports bytes; Linux reports KB. This is max RSS, not current,
+        # but it is a useful fallback when /proc is unavailable.
+        rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        divisor = 1024 * 1024 if os.uname().sysname == "Darwin" else 1024
+        return round(rss / divisor, 1)
+    except Exception:
+        pass
+
+    try:
         out = subprocess.run(
             ["ps", "-o", "rss=", "-p", str(os.getpid())],
             capture_output=True,
