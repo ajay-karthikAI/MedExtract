@@ -22,3 +22,18 @@ def sample_notes_dir() -> Path:
     if settings.data_dir:
         return Path(settings.data_dir) / "sample_notes"
     return _find_existing("data/sample_notes") or Path(__file__).resolve().parents[3] / "data" / "sample_notes"
+
+
+def icd10_mapping_path() -> Path:
+    if settings.data_dir:
+        return Path(settings.data_dir) / "icd10_mapping.json"
+    return _find_existing("data/icd10_mapping.json") or Path(__file__).resolve().parents[3] / "data" / "icd10_mapping.json"
+
+
+def knowledge_file_path(filename: str) -> Path:
+    if settings.data_dir:
+        return Path(settings.data_dir) / "knowledge" / filename
+    return (
+        _find_existing(f"data/knowledge/{filename}")
+        or Path(__file__).resolve().parents[3] / "data" / "knowledge" / filename
+    )

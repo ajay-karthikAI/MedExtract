@@ -1,0 +1,121 @@
+[
+  {
+    "abbreviation": "STEMI",
+    "expansion": "ST-elevation myocardial infarction",
+    "category": "condition",
+    "aliases": ["ST elevation MI"],
+    "snippet": "STEMI expands to ST-elevation myocardial infarction."
+  },
+  {
+    "abbreviation": "CHF",
+    "expansion": "congestive heart failure",
+    "category": "condition",
+    "aliases": [],
+    "snippet": "CHF expands to congestive heart failure."
+  },
+  {
+    "abbreviation": "ACS",
+    "expansion": "acute coronary syndrome",
+    "category": "condition",
+    "aliases": [],
+    "snippet": "ACS commonly expands to acute coronary syndrome."
+  },
+  {
+    "abbreviation": "SOB",
+    "expansion": "shortness of breath",
+    "category": "symptom",
+    "aliases": [],
+    "snippet": "SOB commonly expands to shortness of breath."
+  },
+  {
+    "abbreviation": "HTN",
+    "expansion": "hypertension",
+    "category": "condition",
+    "aliases": [],
+    "snippet": "HTN commonly expands to hypertension."
+  },
+  {
+    "abbreviation": "DM2",
+    "expansion": "type 2 diabetes mellitus",
+    "category": "condition",
+    "aliases": ["T2DM"],
+    "snippet": "DM2 and T2DM commonly expand to type 2 diabetes mellitus."
+  },
+  {
+    "abbreviation": "HLD",
+    "expansion": "hyperlipidemia",
+    "category": "condition",
+    "aliases": [],
+    "snippet": "HLD commonly expands to hyperlipidemia."
+  },
+  {
+    "abbreviation": "UTI",
+    "expansion": "urinary tract infection",
+    "category": "condition",
+    "aliases": [],
+    "snippet": "UTI commonly expands to urinary tract infection."
+  },
+  {
+    "abbreviation": "PNA",
+    "expansion": "pneumonia",
+    "category": "condition",
+    "aliases": [],
+    "snippet": "PNA is often used as an abbreviation for pneumonia."
+  },
+  {
+    "abbreviation": "RAD",
+    "expansion": "asthma",
+    "category": "condition",
+    "aliases": ["reactive airway disease"],
+    "snippet": "RAD often refers to reactive airway disease and can map to asthma in this demo dictionary."
+  },
+  {
+    "abbreviation": "MDD",
+    "expansion": "major depressive disorder",
+    "category": "condition",
+    "aliases": [],
+    "snippet": "MDD expands to major depressive disorder."
+  },
+  {
+    "abbreviation": "CP",
+    "expansion": "chest pain",
+    "category": "symptom",
+    "aliases": [],
+    "snippet": "CP commonly expands to chest pain in clinical note context."
+  },
+  {
+    "abbreviation": "N/V",
+    "expansion": "nausea and vomiting",
+    "category": "symptom",
+    "aliases": ["NV"],
+    "snippet": "N/V commonly expands to nausea and vomiting."
+  },
+  {
+    "abbreviation": "ECG",
+    "expansion": "electrocardiogram",
+    "category": "procedure",
+    "aliases": ["EKG"],
+    "snippet": "ECG and EKG refer to electrocardiogram."
+  },
+  {
+    "abbreviation": "CXR",
+    "expansion": "chest radiograph",
+    "category": "procedure",
+    "aliases": ["chest x-ray"],
+    "snippet": "CXR commonly expands to chest radiograph."
+  },
+  {
+    "abbreviation": "CBC",
+    "expansion": "complete blood count",
+    "category": "procedure",
+    "aliases": [],
+    "snippet": "CBC expands to complete blood count."
+  },
+  {
+    "abbreviation": "UA",
+    "expansion": "urinalysis",
+    "category": "procedure",
+    "aliases": [],
+    "snippet": "UA commonly expands to urinalysis."
+  }
+]

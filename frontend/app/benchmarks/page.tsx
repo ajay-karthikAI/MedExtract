@@ -6,59 +6,52 @@ import { formatDate, FRAMEWORKS } from "@/lib/display";
 import type { BenchmarkFrameworkResult, BenchmarkRun } from "@/lib/types";
 
 const ordered = (results: BenchmarkFrameworkResult[]) =>
-  FRAMEWORKS.map((f) => results.find((r) => r.framework === f.value)).filter(
-    (r): r is BenchmarkFrameworkResult => r !== undefined,
+  FRAMEWORKS.map((framework) => results.find((result) => result.framework === framework.value)).filter(
+    (result): result is BenchmarkFrameworkResult => result !== undefined,
   );
 
-function MetricPanel({
-  title,
-  unit,
-  hint,
+function Bar({ value, max, framework }: { value: number | null; max: number; framework: string }) {
+  const token = framework === "pytorch" ? "procedure" : framework === "tensorflow" ? "symptom" : "medication";
+  return (
+    <span className="block h-2 border border-[var(--rule)]">
+      {value !== null && max > 0 && (
+        <span
+          className="block h-full"
+          style={{
+            width: `${Math.max((value / max) * 100, 2)}%`,
+            background: `var(--${token})`,
+          }}
+        />
+      )}
+    </span>
+  );
+}
+
+function MetricBlock({
+  label,
   results,
   value,
   format,
 }: {
-  title: string;
-  unit: string;
-  hint?: string;
+  label: string;
   results: BenchmarkFrameworkResult[];
-  value: (r: BenchmarkFrameworkResult) => number | null;
-  format: (v: number) => string;
+  value: (result: BenchmarkFrameworkResult) => number | null;
+  format: (value: number) => string;
 }) {
-  const rows = ordered(results).map((r) => ({ r, v: value(r) }));
-  const max = Math.max(...rows.map(({ v }) => v ?? 0), 0);
+  const rows = ordered(results).map((result) => ({ result, metric: value(result) }));
+  const max = Math.max(...rows.map((row) => row.metric ?? 0), 0);
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <header className="mb-4">
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-          {title} <span className="font-normal text-slate-400 dark:text-slate-500">({unit})</span>
-        </h3>
-        {hint && <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">{hint}</p>}
-      </header>
-      <div className="space-y-3">
-        {rows.map(({ r, v }) => {
-          const fw = FRAMEWORKS.find((f) => f.value === r.framework)!;
-          return (
-            <div key={r.framework} className="flex items-center gap-3">
-              <span className="flex w-24 shrink-0 items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300">
-                <span className={`h-2 w-2 rounded-full ${fw.dot}`} aria-hidden />
-                {fw.label}
-              </span>
-              <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                {v !== null && max > 0 && (
-                  <span
-                    className={`block h-full rounded-full ${fw.bar}`}
-                    style={{ width: `${Math.max((v / max) * 100, 2)}%` }}
-                  />
-                )}
-              </span>
-              <span className="w-16 shrink-0 text-right text-sm tabular-nums text-slate-900 dark:text-slate-100">
-                {v === null ? "—" : format(v)}
-              </span>
-            </div>
-          );
-        })}
+    <section className="chart-paper p-3">
+      <h3 className="chart-label mb-3">{label}</h3>
+      <div className="space-y-2">
+        {rows.map(({ result, metric }) => (
+          <div key={result.framework} className="grid grid-cols-[90px_minmax(0,1fr)_64px] items-center gap-3 text-[12px]">
+            <span>{result.framework}</span>
+            <Bar value={metric} max={max} framework={result.framework} />
+            <span className="text-right">{metric === null ? "—" : format(metric)}</span>
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -66,105 +59,51 @@ function MetricPanel({
 
 function RunDetail({ run }: { run: BenchmarkRun }) {
   return (
-    <div className="space-y-5">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <MetricPanel
-          title="Inference time"
-          unit="ms/note, mean"
-          hint="Lower is better · same serving path as /analyze-note"
-          results={run.results}
-          value={(r) => r.mean_ms}
-          format={(v) => v.toFixed(1)}
-        />
-        <MetricPanel
-          title="Confidence"
-          unit="mean"
-          hint="Mean over entities + ICD codes per note"
-          results={run.results}
-          value={(r) => r.mean_confidence}
-          format={(v) => `${Math.round(v * 100)}%`}
-        />
-        <MetricPanel
-          title="Entities extracted"
-          unit="per note, mean"
-          results={run.results}
-          value={(r) => r.mean_entities}
-          format={(v) => v.toFixed(1)}
-        />
-        <MetricPanel
-          title="ICD-10 suggestions"
-          unit="per note, mean"
-          results={run.results}
-          value={(r) => r.mean_icd_codes}
-          format={(v) => v.toFixed(1)}
-        />
-        <MetricPanel
-          title="Memory growth"
-          unit="MB RSS, approx."
-          hint="Lower is better · mostly one-time model loading; ~0 if already loaded"
-          results={run.results}
-          value={(r) => r.rss_delta_mb}
-          format={(v) => v.toFixed(0)}
-        />
+    <div className="space-y-4">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <MetricBlock label="Mean ms / note" results={run.results} value={(result) => result.mean_ms} format={(value) => value.toFixed(1)} />
+        <MetricBlock label="Mean confidence" results={run.results} value={(result) => result.mean_confidence} format={(value) => value.toFixed(2)} />
+        <MetricBlock label="Entities / note" results={run.results} value={(result) => result.mean_entities} format={(value) => value.toFixed(1)} />
+        <MetricBlock label="ICD hints / note" results={run.results} value={(result) => result.mean_icd_codes} format={(value) => value.toFixed(1)} />
       </div>
 
-      <section className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <table className="w-full text-left text-sm">
+      <section className="chart-paper overflow-x-auto">
+        <table className="w-full text-left text-[12px]">
           <thead>
-            <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400 dark:border-slate-800 dark:text-slate-500">
-              <th className="px-5 py-3 font-medium">Framework</th>
-              <th className="px-5 py-3 font-medium">Model</th>
-              <th className="px-5 py-3 text-right font-medium">Mean ms</th>
-              <th className="px-5 py-3 text-right font-medium">p50 ms</th>
-              <th className="px-5 py-3 text-right font-medium">p95 ms</th>
-              <th className="px-5 py-3 text-right font-medium">Confidence</th>
-              <th className="px-5 py-3 text-right font-medium">Entities</th>
-              <th className="px-5 py-3 text-right font-medium">ICD</th>
-              <th className="px-5 py-3 text-right font-medium">RSS MB</th>
+            <tr className="border-b border-[var(--rule)] bg-[var(--paper-muted)] text-[11px] uppercase tracking-[0.08em] text-[var(--ink-muted)]">
+              <th className="px-3 py-2">Framework</th>
+              <th className="px-3 py-2">Model</th>
+              <th className="px-3 py-2 text-right">Mean</th>
+              <th className="px-3 py-2 text-right">p50</th>
+              <th className="px-3 py-2 text-right">p95</th>
+              <th className="px-3 py-2 text-right">Conf</th>
+              <th className="px-3 py-2 text-right">Entities</th>
+              <th className="px-3 py-2 text-right">ICD</th>
+              <th className="px-3 py-2 text-right">RSS</th>
             </tr>
           </thead>
           <tbody>
-            {ordered(run.results).map((r) => {
-              const fw = FRAMEWORKS.find((f) => f.value === r.framework)!;
-              return (
-                <tr key={r.framework} className="border-b border-slate-100 last:border-0 dark:border-slate-800">
-                  <td className="px-5 py-3">
-                    <span className="flex items-center gap-2 font-medium text-slate-800 dark:text-slate-200">
-                      <span className={`h-2 w-2 rounded-full ${fw.dot}`} aria-hidden />
-                      {fw.label}
-                      {r.status === "placeholder" && (
-                        <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700 ring-1 ring-inset ring-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:ring-amber-900">
-                          placeholder
-                        </span>
-                      )}
-                    </span>
-                  </td>
-                  <td className="max-w-56 truncate px-5 py-3 font-mono text-xs text-slate-500 dark:text-slate-400" title={r.model_name}>
-                    {r.model_name}
-                  </td>
-                  <td className="px-5 py-3 text-right tabular-nums">{r.mean_ms.toFixed(1)}</td>
-                  <td className="px-5 py-3 text-right tabular-nums">{r.p50_ms.toFixed(1)}</td>
-                  <td className="px-5 py-3 text-right tabular-nums">{r.p95_ms.toFixed(1)}</td>
-                  <td className="px-5 py-3 text-right tabular-nums">
-                    {Math.round(r.mean_confidence * 100)}%
-                  </td>
-                  <td className="px-5 py-3 text-right tabular-nums">{r.mean_entities.toFixed(1)}</td>
-                  <td className="px-5 py-3 text-right tabular-nums">{r.mean_icd_codes.toFixed(1)}</td>
-                  <td className="px-5 py-3 text-right tabular-nums">
-                    {r.rss_mb === null ? "—" : r.rss_mb.toFixed(0)}
-                  </td>
-                </tr>
-              );
-            })}
+            {ordered(run.results).map((result) => (
+              <tr key={result.framework} className="border-b border-[var(--rule)] last:border-b-0">
+                <td className="px-3 py-2 font-semibold">{result.framework}</td>
+                <td className="max-w-72 truncate px-3 py-2 text-[var(--ink-muted)]" title={result.model_name}>
+                  {result.model_name} {result.status === "placeholder" ? "· placeholder" : ""}
+                </td>
+                <td className="px-3 py-2 text-right">{result.mean_ms.toFixed(1)}</td>
+                <td className="px-3 py-2 text-right">{result.p50_ms.toFixed(1)}</td>
+                <td className="px-3 py-2 text-right">{result.p95_ms.toFixed(1)}</td>
+                <td className="px-3 py-2 text-right">{result.mean_confidence.toFixed(2)}</td>
+                <td className="px-3 py-2 text-right">{result.mean_entities.toFixed(1)}</td>
+                <td className="px-3 py-2 text-right">{result.mean_icd_codes.toFixed(1)}</td>
+                <td className="px-3 py-2 text-right">{result.rss_mb === null ? "—" : result.rss_mb.toFixed(0)}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </section>
 
-      <p className="text-xs leading-relaxed text-slate-400 dark:text-slate-500">
-        Benchmarked over {run.notes_count} synthetic sample notes × {run.iterations} iterations
-        on the API serving path (CPU). Entity/ICD counts and confidence measure model behavior,
-        not correctness — a higher count is not automatically better. Memory is process-level
-        RSS and approximate.
+      <p className="text-[11px] leading-5 text-[var(--ink-soft)]">
+        {run.notes_count} synthetic notes × {run.iterations} iterations. Counts describe extraction behavior, not clinical correctness.
       </p>
     </div>
   );
@@ -202,31 +141,25 @@ export default function BenchmarksPage() {
     }
   }
 
-  const selected = runs?.find((r) => r.id === selectedId) ?? runs?.[0] ?? null;
+  const selected = runs?.find((run) => run.id === selectedId) ?? runs?.[0] ?? null;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="space-y-4">
+      <header className="flex flex-wrap items-end justify-between gap-4 border-b border-[var(--rule)] pb-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-            Framework benchmarks
-          </h1>
-          <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
-            PyTorch, TensorFlow, and JAX pipelines compared on the same notes through the same
-            API path. Results are stored, so runs are comparable over time.
-          </p>
+          <h1 className="text-[18px] font-semibold">Framework benchmarks</h1>
+          <p className="mt-1 text-[12px] text-[var(--ink-muted)]">Same notes, same API path, restrained instrumentation.</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {runs && runs.length > 1 && (
             <select
               value={selected?.id ?? ""}
-              onChange={(e) => setSelectedId(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 shadow-sm focus:border-teal-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
-              aria-label="Select benchmark run"
+              onChange={(event) => setSelectedId(event.target.value)}
+              className="focus-ring h-8 border border-[var(--rule)] bg-[var(--paper)] px-2 text-[12px]"
             >
-              {runs.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {formatDate(r.created_at)}
+              {runs.map((run) => (
+                <option key={run.id} value={run.id}>
+                  {formatDate(run.created_at)}
                 </option>
               ))}
             </select>
@@ -235,43 +168,20 @@ export default function BenchmarksPage() {
             type="button"
             onClick={handleRun}
             disabled={running}
-            className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="focus-ring bg-[var(--primary)] px-4 py-2 text-[11px] font-semibold text-[var(--primary-ink)] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {running && (
-              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
-                <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" strokeWidth="3" />
-              </svg>
-            )}
-            {running ? "Benchmarking…" : "Run benchmark"}
+            {running ? "RUNNING..." : "RUN BENCHMARK"}
           </button>
         </div>
-      </div>
+      </header>
 
       {error && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
-          <p className="font-medium">Benchmark error</p>
-          <p className="mt-0.5 text-red-600 dark:text-red-400">{error}</p>
+        <div className="border border-[var(--alert)] bg-[var(--alert-bg)] px-4 py-3 text-[12px] text-[var(--alert)]">
+          {error}
         </div>
       )}
-
-      {!error && runs === null && (
-        <div className="animate-pulse space-y-4">
-          <div className="h-40 rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900" />
-          <div className="h-40 rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900" />
-        </div>
-      )}
-
-      {runs !== null && runs.length === 0 && (
-        <div className="rounded-2xl border-2 border-dashed border-slate-200 px-6 py-14 text-center dark:border-slate-800">
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">No benchmark runs yet</p>
-          <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">
-            Press <span className="font-medium text-slate-500 dark:text-slate-400">Run benchmark</span> to compare
-            the three frameworks. The first run loads every model, so it takes a minute.
-          </p>
-        </div>
-      )}
-
+      {runs === null && !error && <p className="chart-paper p-4 text-[12px] text-[var(--ink-muted)]">Loading benchmarks...</p>}
+      {runs !== null && runs.length === 0 && <p className="chart-paper p-4 text-[12px] text-[var(--ink-muted)]">No benchmark runs yet.</p>}
       {selected && <RunDetail run={selected} />}
     </div>
   );

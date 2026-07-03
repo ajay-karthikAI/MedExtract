@@ -1,0 +1,67 @@
+[
+  {
+    "name": "hypertension",
+    "aliases": ["high blood pressure", "essential hypertension", "htn"],
+    "definition": "Persistently elevated systemic blood pressure."
+  },
+  {
+    "name": "type 2 diabetes mellitus",
+    "aliases": ["type 2 diabetes", "type ii diabetes", "dm2", "t2dm"],
+    "definition": "A chronic metabolic condition characterized by insulin resistance and elevated blood glucose."
+  },
+  {
+    "name": "hyperlipidemia",
+    "aliases": ["high cholesterol", "hld", "dyslipidemia"],
+    "definition": "Elevated cholesterol, triglycerides, or other blood lipids."
+  },
+  {
+    "name": "pneumonia",
+    "aliases": ["pna", "community acquired pneumonia"],
+    "definition": "Infection or inflammation of lung tissue, often associated with cough, fever, and infiltrates."
+  },
+  {
+    "name": "asthma",
+    "aliases": ["reactive airway disease", "rad", "bronchial asthma"],
+    "definition": "Chronic airway disease with variable airflow obstruction and bronchial hyperresponsiveness."
+  },
+  {
+    "name": "congestive heart failure",
+    "aliases": ["heart failure", "chf"],
+    "definition": "A syndrome in which the heart cannot pump enough blood to meet the body's needs."
+  },
+  {
+    "name": "ST-elevation myocardial infarction",
+    "aliases": ["stemi", "st elevation myocardial infarction", "st elevation mi"],
+    "definition": "An acute myocardial infarction pattern associated with ST-segment elevation on ECG."
+  },
+  {
+    "name": "acute coronary syndrome",
+    "aliases": ["acs"],
+    "definition": "A group of urgent heart conditions caused by reduced blood flow to the heart."
+  },
+  {
+    "name": "major depressive disorder",
+    "aliases": ["depression", "mdd", "depressive disorder"],
+    "definition": "A mood disorder characterized by persistent depressed mood or loss of interest with functional impairment."
+  },
+  {
+    "name": "migraine",
+    "aliases": ["migraine headache"],
+    "definition": "A recurrent headache disorder that may include nausea, light sensitivity, or aura."
+  },
+  {
+    "name": "urinary tract infection",
+    "aliases": ["uti", "urine infection"],
+    "definition": "Infection involving part of the urinary tract."
+  },
+  {
+    "name": "gastroesophageal reflux disease",
+    "aliases": ["gerd", "acid reflux"],
+    "definition": "Reflux of stomach contents into the esophagus causing symptoms or mucosal injury."
+  },
+  {
+    "name": "chronic obstructive pulmonary disease",
+    "aliases": ["copd", "emphysema", "chronic bronchitis"],
+    "definition": "A chronic lung disease with persistent airflow limitation."
+  }
+]

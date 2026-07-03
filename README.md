@@ -11,8 +11,9 @@ MedExtract is a portfolio-ready clinical NLP demo that turns free-text clinical 
 ## Highlights
 
 - Extracts conditions, symptoms, medications, and procedures from clinical notes.
+- Uses a hybrid local pipeline: rule dictionaries, optional model votes, entity merge/dedupe, local RAG normalization, ICD mapping, and calibrated confidence scoring.
 - Suggests ICD-10 codes as human-review hints.
-- Generates patient-friendly summaries from technical note content.
+- Generates deterministic patient-friendly summaries from extracted note evidence.
 - Supports text entry and PDF/TXT upload workflows.
 - Persists analyses, entities, ICD-10 suggestions, and history in PostgreSQL.
 - Compares PyTorch, TensorFlow, JAX, and fallback extraction behavior through a benchmark API and UI page.
@@ -34,15 +35,37 @@ flowchart LR
     user[User / Portfolio Reviewer] --> ui[Next.js Frontend<br/>TypeScript + Tailwind<br/>localhost:3100]
     ui --> api[FastAPI Backend<br/>Python + SQLAlchemy<br/>localhost:8010]
     api --> db[(PostgreSQL<br/>notes, extractions,<br/>entities, ICD-10, benchmarks)]
+    api --> rules[Rule Dictionary<br/>conditions, symptoms,<br/>meds, procedures, abbreviations]
     api --> dispatch[Framework Dispatcher]
-    dispatch --> pt[PyTorch Pipeline<br/>HF token classification NER]
-    dispatch --> tf[TensorFlow Pipeline<br/>Keras classifier + lexicon extraction]
-    dispatch --> jax[JAX Pipeline<br/>Flax research benchmark path]
-    dispatch --> rules[Rule-based Fallback<br/>zero ML dependencies]
+    dispatch --> pt[PyTorch Votes<br/>optional local pipeline]
+    dispatch --> tf[TensorFlow Votes<br/>optional local pipeline]
+    dispatch --> jax[JAX Votes<br/>optional local pipeline]
+    rules --> merge[Hybrid Merge + Dedupe<br/>source: rule/model/both/ensemble]
+    pt --> merge
+    tf --> merge
+    jax --> merge
+    merge --> rag[Local RAG Knowledge Files<br/>ICD descriptions, med aliases,<br/>condition definitions, abbreviations]
+    rag --> icd[ICD-10 Mapping<br/>exact + synonym match]
+    rag --> summary[Deterministic Patient Summary]
+    merge --> confidence[Evidence-Based Confidence<br/>match quality, mentions,<br/>agreement, uncertainty]
     api --> docs[Swagger / OpenAPI<br/>/docs]
 ```
 
 More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+
+## Hybrid Extraction Pipeline
+
+`/analyze-note`, `/analyze-file`, and `/api/extract` use the same local-first pipeline:
+
+1. Rule-based dictionaries extract exact condition, symptom, medication, procedure, and abbreviation matches.
+2. Optional PyTorch, TensorFlow, and JAX pipelines contribute model entity votes when their dependencies/checkpoints are available.
+3. Duplicate entities are merged by normalized category/name and labeled by source: `rule`, `model`, `both`, or `ensemble_agreement`.
+4. Local RAG knowledge files in `data/knowledge/` retrieve exact snippets for ICD descriptions, medication aliases, condition definitions, and abbreviations.
+5. Retrieved snippets improve normalized names and ICD-10 mapping without paid APIs or network calls.
+6. Confidence scoring uses evidence strength: exact text match, abbreviation match, model probability, mention count, rule/model agreement, framework agreement, uncertainty language, and ICD match quality.
+7. Patient summaries are deterministic, plain-language, and limited to facts extracted from the note plus explicit follow-up instructions found in the note.
+
+The API also returns `framework_votes` so the frontend can show which optional framework pipelines supported each entity. When optional ML dependencies are not installed, MedExtract does not fake model agreement; it falls back to the local rule and knowledge pipeline.
 
 ## Repository Layout
 
@@ -52,7 +75,7 @@ MedExtract/
 ├── frontend/                # Next.js app, dashboard UI, history, benchmarks
 ├── db/init/                 # PostgreSQL initialization SQL
 ├── docs/                    # Portfolio documentation: architecture, API, models
-├── data/                    # Synthetic notes and generated synthetic CSV data
+├── data/                    # Synthetic notes, eval data, ICD map, local knowledge files
 ├── ml/
 │   ├── pytorch_pipeline/    # Hugging Face token-classification path
 │   ├── tensorflow_pipeline/ # Keras classifier-assisted path

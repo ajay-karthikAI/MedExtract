@@ -1,6 +1,10 @@
 """API tests that don't require a database connection."""
 
+import os
+
 from fastapi.testclient import TestClient
+
+os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
 
 from app.main import app
 
@@ -39,6 +43,11 @@ def test_stateless_extract_returns_dictionary_normalized_names():
     assert {e["normalized"] for e in body["symptoms"]} == {"shortness of breath"}
     assert {e["normalized"] for e in body["medications"]} == {"furosemide"}
     assert {e["normalized"] for e in body["procedures"]} == {"electrocardiogram"}
+    assert {
+        e["source"]
+        for group in ("conditions", "symptoms", "medications", "procedures")
+        for e in body[group]
+    } == {"rule"}
 
 
 def test_analyze_note_rejects_unknown_framework():

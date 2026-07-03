@@ -29,7 +29,9 @@ CREATE TABLE IF NOT EXISTS entities (
     normalized     TEXT,                   -- canonical form, if known
     span_start     INTEGER,                -- character offsets into notes.body
     span_end       INTEGER,
-    confidence     REAL NOT NULL DEFAULT 1.0
+    confidence     REAL NOT NULL DEFAULT 1.0,
+    source         TEXT NOT NULL DEFAULT 'rule' CHECK (source IN ('rule', 'model', 'both', 'ensemble_agreement')),
+    warning        TEXT
 );
 
 -- Suggested ICD-10 codes (heuristic; for human review only).

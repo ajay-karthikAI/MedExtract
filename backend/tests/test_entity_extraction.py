@@ -10,16 +10,18 @@ def test_entity_extraction_groups_all_categories():
     assert {entity.normalized for entity in groups.conditions} == {"hypertension"}
     assert {entity.normalized for entity in groups.medications} == {"lisinopril"}
     assert {entity.normalized for entity in groups.procedures} == {"electrocardiogram"}
+    assert {entity.source for entity in entity_extraction.flatten_groups(groups)} == {"rule"}
 
 
 def test_dictionary_abbreviations_are_normalized_by_category():
     groups = entity_extraction.extract_entities(
-        "Assessment: STEMI with CHF, HTN, and DM2. Patient reports SOB. "
+        "Assessment: STEMI with ACS, CHF, HTN, and DM2. Patient reports SOB. "
         "Given Lasix. EKG ordered."
     )
 
     assert {entity.normalized for entity in groups.conditions} == {
         "ST-elevation myocardial infarction",
+        "acute coronary syndrome",
         "congestive heart failure",
         "hypertension",
         "type 2 diabetes mellitus",
@@ -78,6 +80,82 @@ def test_model_payload_entities_use_dictionary_normalization():
 
     assert {entity.normalized for entity in groups.conditions} == {"hypertension"}
     assert {entity.normalized for entity in groups.symptoms} == {"shortness of breath"}
+    assert {entity.source for entity in entity_extraction.flatten_groups(groups)} == {"model"}
+
+
+def test_hybrid_merge_labels_both_and_boosts_confidence():
+    note = "PMH: HTN."
+    rule_groups = entity_extraction.extract_entities(note)
+    model_groups = entity_extraction.normalize_model_payload(
+        note,
+        {
+            "conditions": [
+                {
+                    "category": "condition",
+                    "text": "HTN",
+                    "normalized": "htn",
+                    "span_start": note.index("HTN"),
+                    "span_end": note.index("HTN") + len("HTN"),
+                    "confidence": 0.7,
+                }
+            ]
+        },
+    )
+
+    merged = entity_extraction.merge_entity_groups(rule_groups, model_groups)
+
+    assert len(merged.conditions) == 1
+    assert merged.conditions[0].normalized == "hypertension"
+    assert merged.conditions[0].source == "both"
+    assert merged.conditions[0].confidence > 0.7
+
+
+def test_hybrid_merge_dedupes_model_and_rule_knowledge_aliases():
+    note = "PMH: HLD."
+    rule_groups = entity_extraction.extract_entities(note)
+    model_groups = entity_extraction.normalize_model_payload(
+        note,
+        {
+            "conditions": [
+                {
+                    "category": "condition",
+                    "text": "HLD",
+                    "normalized": "hld",
+                    "span_start": note.index("HLD"),
+                    "span_end": note.index("HLD") + len("HLD"),
+                    "confidence": 0.8,
+                }
+            ]
+        },
+    )
+
+    merged = entity_extraction.merge_entity_groups(rule_groups, model_groups)
+
+    assert len(merged.conditions) == 1
+    assert merged.conditions[0].normalized == "hyperlipidemia"
+    assert merged.conditions[0].source == "both"
+
+
+def test_hybrid_merge_lowers_weak_model_only_entity():
+    note = "Assessment includes zebroid syndrome."
+    payload = {
+        "conditions": [
+            {
+                "category": "condition",
+                "text": "zebroid syndrome",
+                "normalized": "zebroid syndrome",
+                "span_start": note.index("zebroid"),
+                "span_end": note.index("zebroid") + len("zebroid syndrome"),
+                "confidence": 0.4,
+            }
+        ]
+    }
+
+    merged = entity_extraction.extract_with_model_payload(note, payload)
+
+    assert len(merged.conditions) == 1
+    assert merged.conditions[0].source == "model"
+    assert merged.conditions[0].confidence < 0.4
 
 
 def test_entity_extraction_skips_negated_symptoms():
@@ -96,11 +174,27 @@ def test_entity_extraction_skips_family_history_conditions():
     assert {entity.normalized for entity in groups.conditions} == {"hypertension"}
 
 
-def test_entity_extraction_does_not_assign_high_rule_confidence():
+def test_entity_extraction_skips_medications_in_allergy_context():
+    groups = entity_extraction.extract_entities(
+        "Allergies: aspirin. Medications: lisinopril."
+    )
+
+    assert {entity.normalized for entity in groups.medications} == {"lisinopril"}
+
+
+def test_entity_extraction_skips_insulin_resistance_as_medication():
+    groups = entity_extraction.extract_entities(
+        "Assessment: type 2 diabetes with insulin resistance."
+    )
+
+    assert groups.medications == []
+
+
+def test_entity_extraction_assigns_high_exact_rule_confidence():
     groups = entity_extraction.extract_entities("Assessment: type 2 diabetes.")
 
     assert groups.conditions
-    assert max(entity.confidence for entity in groups.conditions) < 0.8
+    assert max(entity.confidence for entity in groups.conditions) >= 0.8
 
 
 def test_flatten_groups_keeps_response_order():

@@ -3,99 +3,37 @@
 import { useCallback, useEffect, useState } from "react";
 import { CategoryGrid, IcdList, SummaryCard } from "@/components/AnalysisResults";
 import { getHistory } from "@/lib/api";
-import { CATEGORIES, entityCount, formatDate, frameworkLabel, percent } from "@/lib/display";
+import { entityCount, formatDate, frameworkLabel } from "@/lib/display";
 import type { HistoryItem } from "@/lib/types";
 
-function HistoryCard({ item }: { item: HistoryItem }) {
+function HistoryRow({ item }: { item: HistoryItem }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <article className="border-b border-[var(--rule)] last:border-b-0">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen((value) => !value)}
+        className="focus-ring grid min-h-12 w-full gap-3 px-3 py-2 text-left text-[12px] hover:bg-[var(--paper-muted)] md:grid-cols-[170px_110px_minmax(0,1fr)_110px_80px]"
         aria-expanded={open}
-        className="flex w-full items-center gap-4 px-6 py-4 text-left"
       >
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              {formatDate(item.created_at)}
-            </span>
-            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-              {frameworkLabel(item.framework)}
-            </span>
-            {item.note_title && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-teal-700 ring-1 ring-inset ring-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:ring-teal-900">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-3 w-3"
-                  aria-hidden
-                >
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6" />
-                </svg>
-                {item.note_title}
-              </span>
-            )}
-            <span className="hidden font-mono text-xs text-slate-400 sm:inline dark:text-slate-500">
-              {item.model_used}
-            </span>
-          </div>
-          <p className="mt-1 truncate text-sm text-slate-500 dark:text-slate-400">{item.note_preview}</p>
-        </div>
-
-        <div className="hidden shrink-0 items-center gap-3 md:flex">
-          {CATEGORIES.map(({ key, dot }) => (
-            <span key={key} className="flex items-center gap-1.5 text-xs tabular-nums text-slate-500 dark:text-slate-400">
-              <span className={`h-2 w-2 rounded-full ${dot}`} aria-hidden />
-              {item.entities[key].length}
-            </span>
-          ))}
-          <span className="w-12 text-right text-xs tabular-nums text-slate-400 dark:text-slate-500">
-            {percent(item.confidence)}
-          </span>
-        </div>
-
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={`h-4 w-4 shrink-0 text-slate-400 transition-transform dark:text-slate-500 ${open ? "rotate-180" : ""}`}
-          aria-hidden
-        >
-          <path d="m6 9 6 6 6-6" />
-        </svg>
+        <span>{formatDate(item.created_at)}</span>
+        <span className="text-[var(--ink-muted)]">{frameworkLabel(item.framework)}</span>
+        <span className="truncate" title={item.note_preview}>{item.note_preview}</span>
+        <span className="text-right text-[var(--ink-muted)]">{entityCount(item.entities)} entities</span>
+        <span className="text-right">{item.confidence.toFixed(2)}</span>
       </button>
 
       {open && (
-        <div className="space-y-4 border-t border-slate-100 px-6 py-5 dark:border-slate-800">
-          <div className="text-xs text-slate-400 sm:hidden dark:text-slate-500">
-            <span className="font-mono">{item.model_used}</span> ·{" "}
-            {entityCount(item.entities)} entities · {percent(item.confidence)} confidence
+        <div className="grid gap-3 border-t border-[var(--rule)] bg-[var(--paper)] p-3 lg:grid-cols-[1fr_1fr]">
+          <div className="space-y-3">
+            <SummaryCard summary={item.patient_summary} />
+            <CategoryGrid groups={item.entities} />
           </div>
-          <SummaryCard summary={item.patient_summary} />
-          <CategoryGrid groups={item.entities} />
           <IcdList codes={item.icd_codes} />
         </div>
       )}
     </article>
-  );
-}
-
-function SkeletonCard() {
-  return (
-    <div className="animate-pulse rounded-2xl border border-slate-200 bg-white px-6 py-5 dark:border-slate-800 dark:bg-slate-900">
-      <div className="h-3.5 w-56 rounded bg-slate-100 dark:bg-slate-800" />
-      <div className="mt-2.5 h-3 w-full max-w-xl rounded bg-slate-100 dark:bg-slate-800" />
-    </div>
   );
 }
 
@@ -114,56 +52,41 @@ export default function HistoryPage() {
   useEffect(load, [load]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="space-y-4">
+      <header className="flex items-end justify-between gap-4 border-b border-[var(--rule)] pb-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-            Analysis history
-          </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Previous analyses, newest first{items ? ` · ${items.length} shown` : ""}.
+          <h1 className="text-[18px] font-semibold">Analysis history</h1>
+          <p className="mt-1 text-[12px] text-[var(--ink-muted)]">
+            Previous synthetic-note analyses, newest first{items ? ` · ${items.length} shown` : ""}.
           </p>
         </div>
         <button
           type="button"
           onClick={load}
-          className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:text-slate-100"
+          className="focus-ring border border-[var(--rule)] px-3 py-1.5 text-[11px] font-semibold text-[var(--ink-muted)] hover:text-[var(--ink)]"
         >
-          Refresh
+          REFRESH
         </button>
-      </div>
+      </header>
 
       {error && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
-          <p className="font-medium">Couldn’t load history</p>
-          <p className="mt-0.5 text-red-600 dark:text-red-400">{error}</p>
+        <div className="border border-[var(--alert)] bg-[var(--alert-bg)] px-4 py-3 text-[12px] text-[var(--alert)]">
+          {error}
         </div>
       )}
 
-      {!error && items === null && (
-        <div className="space-y-3">
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
+      <section className="chart-paper overflow-hidden">
+        <div className="grid gap-3 border-b border-[var(--rule)] bg-[var(--paper-muted)] px-3 py-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink-muted)] md:grid-cols-[170px_110px_minmax(0,1fr)_110px_80px]">
+          <span>Date</span>
+          <span>Framework</span>
+          <span>Preview</span>
+          <span className="text-right">Entities</span>
+          <span className="text-right">Conf</span>
         </div>
-      )}
-
-      {items !== null && items.length === 0 && (
-        <div className="rounded-2xl border-2 border-dashed border-slate-200 px-6 py-14 text-center dark:border-slate-800">
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">No analyses yet</p>
-          <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">
-            Run your first analysis from the Analyze tab — results are saved here automatically.
-          </p>
-        </div>
-      )}
-
-      {items !== null && items.length > 0 && (
-        <div className="space-y-3">
-          {items.map((item) => (
-            <HistoryCard key={item.id} item={item} />
-          ))}
-        </div>
-      )}
+        {items === null && !error && <p className="p-4 text-[12px] text-[var(--ink-muted)]">Loading history...</p>}
+        {items !== null && items.length === 0 && <p className="p-4 text-[12px] text-[var(--ink-muted)]">No analyses yet.</p>}
+        {items?.map((item) => <HistoryRow key={item.id} item={item} />)}
+      </section>
     </div>
   );
 }

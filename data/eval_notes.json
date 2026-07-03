@@ -1,0 +1,552 @@
+[
+  {
+    "id": "eval-001",
+    "note": "Assessment: HTN and type 2 diabetes. Reports fatigue and dizziness. Medications include lisinopril and metformin. CBC and ECG ordered.",
+    "ground_truth": {
+      "conditions": ["hypertension", "type 2 diabetes mellitus"],
+      "symptoms": ["fatigue", "dizziness"],
+      "medications": ["lisinopril", "metformin"],
+      "procedures": ["complete blood count", "electrocardiogram"],
+      "icd10_codes": ["I10", "E11.9", "R53.83", "R42"]
+    }
+  },
+  {
+    "id": "eval-002",
+    "note": "Chief complaint: chest pain and shortness of breath. Assessment: STEMI. Aspirin started and ECG performed.",
+    "ground_truth": {
+      "conditions": ["ST-elevation myocardial infarction"],
+      "symptoms": ["chest pain", "shortness of breath"],
+      "medications": ["aspirin"],
+      "procedures": ["electrocardiogram"],
+      "icd10_codes": ["I21.3", "R07.9", "R06.02"]
+    }
+  },
+  {
+    "id": "eval-003",
+    "note": "History of CHF with swelling and shortness of breath. Patient takes Lasix. Echocardiogram ordered.",
+    "ground_truth": {
+      "conditions": ["congestive heart failure"],
+      "symptoms": ["edema", "shortness of breath"],
+      "medications": ["furosemide"],
+      "procedures": ["echocardiogram"],
+      "icd10_codes": ["I50.9", "R06.02"]
+    }
+  },
+  {
+    "id": "eval-004",
+    "note": "Assessment: pneumonia with fever and cough. Start azithromycin. Chest x-ray and CBC ordered.",
+    "ground_truth": {
+      "conditions": ["pneumonia"],
+      "symptoms": ["fever", "cough"],
+      "medications": ["azithromycin"],
+      "procedures": ["chest radiograph", "complete blood count"],
+      "icd10_codes": ["J18.9", "R50.9", "R05.9"]
+    }
+  },
+  {
+    "id": "eval-005",
+    "note": "Known asthma with wheezing and cough. Uses albuterol inhaler. Spirometry performed.",
+    "ground_truth": {
+      "conditions": ["asthma"],
+      "symptoms": ["wheezing", "cough"],
+      "medications": ["albuterol"],
+      "procedures": ["spirometry"],
+      "icd10_codes": ["J45.909", "R05.9"]
+    }
+  },
+  {
+    "id": "eval-006",
+    "note": "Patient has hyperlipidemia and hypertension. Reports headache. Continue atorvastatin and amlodipine. Labs ordered.",
+    "ground_truth": {
+      "conditions": ["hyperlipidemia", "hypertension"],
+      "symptoms": ["headache"],
+      "medications": ["atorvastatin", "amlodipine"],
+      "procedures": ["laboratory panel"],
+      "icd10_codes": ["E78.5", "I10", "R51.9"]
+    }
+  },
+  {
+    "id": "eval-007",
+    "note": "Assessment: UTI with dysuria and abdominal pain. Start Macrobid. Urinalysis sent.",
+    "ground_truth": {
+      "conditions": ["urinary tract infection"],
+      "symptoms": ["dysuria", "abdominal pain"],
+      "medications": ["nitrofurantoin"],
+      "procedures": ["urinalysis"],
+      "icd10_codes": ["N39.0", "R30.0", "R10.9"]
+    }
+  },
+  {
+    "id": "eval-008",
+    "note": "History of migraine with headache and nausea. Sumatriptan prescribed. MRI ordered.",
+    "ground_truth": {
+      "conditions": ["migraine"],
+      "symptoms": ["headache", "nausea"],
+      "medications": ["sumatriptan"],
+      "procedures": ["magnetic resonance imaging"],
+      "icd10_codes": ["G43.909", "R51.9", "R11.0"]
+    }
+  },
+  {
+    "id": "eval-009",
+    "note": "Assessment includes depression and anxiety. Reports fatigue and insomnia. Continue Zoloft. Blood work ordered.",
+    "ground_truth": {
+      "conditions": ["major depressive disorder", "anxiety disorder"],
+      "symptoms": ["fatigue"],
+      "medications": ["sertraline"],
+      "procedures": ["laboratory panel"],
+      "icd10_codes": ["F32.9", "F41.9", "R53.83"]
+    }
+  },
+  {
+    "id": "eval-010",
+    "note": "Type 2 diabetes mellitus with hypertension. Reports dizziness. Medications: insulin and hydrochlorothiazide. Labs ordered.",
+    "ground_truth": {
+      "conditions": ["type 2 diabetes mellitus", "hypertension"],
+      "symptoms": ["dizziness"],
+      "medications": ["insulin", "hydrochlorothiazide"],
+      "procedures": ["laboratory panel"],
+      "icd10_codes": ["E11.9", "I10", "R42"]
+    }
+  },
+  {
+    "id": "eval-011",
+    "note": "Assessment: high blood pressure and high cholesterol. Patient reports chest pain. ECG and stress test ordered. Continue Lipitor.",
+    "ground_truth": {
+      "conditions": ["hypertension", "hyperlipidemia"],
+      "symptoms": ["chest pain"],
+      "medications": ["atorvastatin"],
+      "procedures": ["electrocardiogram", "cardiac stress test"],
+      "icd10_codes": ["I10", "E78.5", "R07.9"]
+    }
+  },
+  {
+    "id": "eval-012",
+    "note": "CHF exacerbation with fatigue and swelling. Continue furosemide and lisinopril. Echo and chest xray ordered.",
+    "ground_truth": {
+      "conditions": ["congestive heart failure"],
+      "symptoms": ["fatigue", "edema"],
+      "medications": ["furosemide", "lisinopril"],
+      "procedures": ["echocardiogram", "chest radiograph"],
+      "icd10_codes": ["I50.9", "R53.83"]
+    }
+  },
+  {
+    "id": "eval-013",
+    "note": "Pneumonia follow-up: cough and fever persist. Amoxicillin prescribed. CXR ordered.",
+    "ground_truth": {
+      "conditions": ["pneumonia"],
+      "symptoms": ["cough", "fever"],
+      "medications": ["amoxicillin"],
+      "procedures": ["chest radiograph"],
+      "icd10_codes": ["J18.9", "R05.9", "R50.9"]
+    }
+  },
+  {
+    "id": "eval-014",
+    "note": "Asthma visit for shortness of breath and wheezing. Prednisone and Ventolin prescribed. Spirometry planned.",
+    "ground_truth": {
+      "conditions": ["asthma"],
+      "symptoms": ["shortness of breath", "wheezing"],
+      "medications": ["prednisone", "albuterol"],
+      "procedures": ["spirometry"],
+      "icd10_codes": ["J45.909", "R06.02"]
+    }
+  },
+  {
+    "id": "eval-015",
+    "note": "DM2 and hyperlipidemia follow-up. Reports fatigue. Medications include Glucophage and atorvastatin. Blood work ordered.",
+    "ground_truth": {
+      "conditions": ["type 2 diabetes mellitus", "hyperlipidemia"],
+      "symptoms": ["fatigue"],
+      "medications": ["metformin", "atorvastatin"],
+      "procedures": ["laboratory panel"],
+      "icd10_codes": ["E11.9", "E78.5", "R53.83"]
+    }
+  },
+  {
+    "id": "eval-016",
+    "note": "Migraine with dizziness and headache. Imitrex continued. MRI brain ordered.",
+    "ground_truth": {
+      "conditions": ["migraine"],
+      "symptoms": ["dizziness", "headache"],
+      "medications": ["sumatriptan"],
+      "procedures": ["magnetic resonance imaging"],
+      "icd10_codes": ["G43.909", "R42", "R51.9"]
+    }
+  },
+  {
+    "id": "eval-017",
+    "note": "UTI symptoms include dysuria and back pain. Start nitrofurantoin. UA and CBC ordered.",
+    "ground_truth": {
+      "conditions": ["urinary tract infection"],
+      "symptoms": ["dysuria", "back pain"],
+      "medications": ["nitrofurantoin"],
+      "procedures": ["urinalysis", "complete blood count"],
+      "icd10_codes": ["N39.0", "R30.0", "M54.9"]
+    }
+  },
+  {
+    "id": "eval-018",
+    "note": "Depression visit with fatigue and headache. Continue sertraline. Labs ordered.",
+    "ground_truth": {
+      "conditions": ["major depressive disorder"],
+      "symptoms": ["fatigue", "headache"],
+      "medications": ["sertraline"],
+      "procedures": ["laboratory panel"],
+      "icd10_codes": ["F32.9", "R53.83", "R51.9"]
+    }
+  },
+  {
+    "id": "eval-019",
+    "note": "Assessment: STEMI with chest pain and nausea. Aspirin given. ECG and cardiac enzymes ordered.",
+    "ground_truth": {
+      "conditions": ["ST-elevation myocardial infarction"],
+      "symptoms": ["chest pain", "nausea"],
+      "medications": ["aspirin"],
+      "procedures": ["electrocardiogram"],
+      "icd10_codes": ["I21.3", "R07.9", "R11.0"]
+    }
+  },
+  {
+    "id": "eval-020",
+    "note": "Hypertension and asthma follow-up. Reports cough. Medications include amlodipine and ProAir. Spirometry ordered.",
+    "ground_truth": {
+      "conditions": ["hypertension", "asthma"],
+      "symptoms": ["cough"],
+      "medications": ["amlodipine", "albuterol"],
+      "procedures": ["spirometry"],
+      "icd10_codes": ["I10", "J45.909", "R05.9"]
+    }
+  },
+  {
+    "id": "eval-021",
+    "note": "Type ii diabetes and high blood pressure. Reports abdominal pain. Metformin and HCTZ continued. CT scan ordered.",
+    "ground_truth": {
+      "conditions": ["type 2 diabetes mellitus", "hypertension"],
+      "symptoms": ["abdominal pain"],
+      "medications": ["metformin", "hydrochlorothiazide"],
+      "procedures": ["computed tomography"],
+      "icd10_codes": ["E11.9", "I10", "R10.9"]
+    }
+  },
+  {
+    "id": "eval-022",
+    "note": "Pneumonia with shortness of breath and fever. Zithromax prescribed. Chest x-ray ordered.",
+    "ground_truth": {
+      "conditions": ["pneumonia"],
+      "symptoms": ["shortness of breath", "fever"],
+      "medications": ["azithromycin"],
+      "procedures": ["chest radiograph"],
+      "icd10_codes": ["J18.9", "R06.02", "R50.9"]
+    }
+  },
+  {
+    "id": "eval-023",
+    "note": "CHF and HTN with dizziness. Lisinopril and Lasix continued. Echocardiogram performed.",
+    "ground_truth": {
+      "conditions": ["congestive heart failure", "hypertension"],
+      "symptoms": ["dizziness"],
+      "medications": ["lisinopril", "furosemide"],
+      "procedures": ["echocardiogram"],
+      "icd10_codes": ["I50.9", "I10", "R42"]
+    }
+  },
+  {
+    "id": "eval-024",
+    "note": "Hyperlipidemia and type 2 diabetes. Reports fatigue. Lipitor and insulin prescribed. Labs and ECG ordered.",
+    "ground_truth": {
+      "conditions": ["hyperlipidemia", "type 2 diabetes mellitus"],
+      "symptoms": ["fatigue"],
+      "medications": ["atorvastatin", "insulin"],
+      "procedures": ["laboratory panel", "electrocardiogram"],
+      "icd10_codes": ["E78.5", "E11.9", "R53.83"]
+    }
+  },
+  {
+    "id": "eval-025",
+    "note": "Urinary tract infection with dysuria and fever. Macrobid started. Urinalysis ordered.",
+    "ground_truth": {
+      "conditions": ["urinary tract infection"],
+      "symptoms": ["dysuria", "fever"],
+      "medications": ["nitrofurantoin"],
+      "procedures": ["urinalysis"],
+      "icd10_codes": ["N39.0", "R30.0", "R50.9"]
+    }
+  },
+  {
+    "id": "eval-026",
+    "note": "Migraine and depression. Symptoms include headache and nausea. Zoloft and sumatriptan continued. MRI ordered.",
+    "ground_truth": {
+      "conditions": ["migraine", "major depressive disorder"],
+      "symptoms": ["headache", "nausea"],
+      "medications": ["sertraline", "sumatriptan"],
+      "procedures": ["magnetic resonance imaging"],
+      "icd10_codes": ["G43.909", "F32.9", "R51.9", "R11.0"]
+    }
+  },
+  {
+    "id": "eval-027",
+    "note": "ST elevation myocardial infarction with chest pain and shortness of breath. Aspirin administered. ECG done.",
+    "ground_truth": {
+      "conditions": ["ST-elevation myocardial infarction"],
+      "symptoms": ["chest pain", "shortness of breath"],
+      "medications": ["aspirin"],
+      "procedures": ["electrocardiogram"],
+      "icd10_codes": ["I21.3", "R07.9", "R06.02"]
+    }
+  },
+  {
+    "id": "eval-028",
+    "note": "Asthma and pneumonia with cough, fever, and wheezing. Albuterol and amoxicillin prescribed. CXR ordered.",
+    "ground_truth": {
+      "conditions": ["asthma", "pneumonia"],
+      "symptoms": ["cough", "fever", "wheezing"],
+      "medications": ["albuterol", "amoxicillin"],
+      "procedures": ["chest radiograph"],
+      "icd10_codes": ["J45.909", "J18.9", "R05.9", "R50.9"]
+    }
+  },
+  {
+    "id": "eval-029",
+    "note": "HTN, DM2, and hyperlipidemia follow-up. Reports dizziness. Medications: lisinopril, metformin, atorvastatin. Blood work ordered.",
+    "ground_truth": {
+      "conditions": ["hypertension", "type 2 diabetes mellitus", "hyperlipidemia"],
+      "symptoms": ["dizziness"],
+      "medications": ["lisinopril", "metformin", "atorvastatin"],
+      "procedures": ["laboratory panel"],
+      "icd10_codes": ["I10", "E11.9", "E78.5", "R42"]
+    }
+  },
+  {
+    "id": "eval-030",
+    "note": "Congestive heart failure with chest pain and edema. Furosemide prescribed. ECG and echo ordered.",
+    "ground_truth": {
+      "conditions": ["congestive heart failure"],
+      "symptoms": ["chest pain", "edema"],
+      "medications": ["furosemide"],
+      "procedures": ["electrocardiogram", "echocardiogram"],
+      "icd10_codes": ["I50.9", "R07.9"]
+    }
+  },
+  {
+    "id": "eval-031",
+    "note": "Depression and migraine. Reports fatigue, insomnia, and headache. Sertraline and Imitrex prescribed.",
+    "ground_truth": {
+      "conditions": ["major depressive disorder", "migraine"],
+      "symptoms": ["fatigue", "headache"],
+      "medications": ["sertraline", "sumatriptan"],
+      "procedures": [],
+      "icd10_codes": ["F32.9", "G43.909", "R53.83", "R51.9"]
+    }
+  },
+  {
+    "id": "eval-032",
+    "note": "High cholesterol and asthma. Reports cough and shortness of breath. Ventolin and Lipitor continued. Spirometry ordered.",
+    "ground_truth": {
+      "conditions": ["hyperlipidemia", "asthma"],
+      "symptoms": ["cough", "shortness of breath"],
+      "medications": ["albuterol", "atorvastatin"],
+      "procedures": ["spirometry"],
+      "icd10_codes": ["E78.5", "J45.909", "R05.9", "R06.02"]
+    }
+  },
+  {
+    "id": "eval-033",
+    "note": "Type 2 diabetes and urinary tract infection. Patient reports dysuria and abdominal pain. Metformin and nitrofurantoin prescribed. UA ordered.",
+    "ground_truth": {
+      "conditions": ["type 2 diabetes mellitus", "urinary tract infection"],
+      "symptoms": ["dysuria", "abdominal pain"],
+      "medications": ["metformin", "nitrofurantoin"],
+      "procedures": ["urinalysis"],
+      "icd10_codes": ["E11.9", "N39.0", "R30.0", "R10.9"]
+    }
+  },
+  {
+    "id": "eval-034",
+    "note": "Pneumonia and asthma with wheezing and cough. Prednisone and azithromycin started. Chest xray ordered.",
+    "ground_truth": {
+      "conditions": ["pneumonia", "asthma"],
+      "symptoms": ["wheezing", "cough"],
+      "medications": ["prednisone", "azithromycin"],
+      "procedures": ["chest radiograph"],
+      "icd10_codes": ["J18.9", "J45.909", "R05.9"]
+    }
+  },
+  {
+    "id": "eval-035",
+    "note": "Hypertension with headache and dizziness. Continue Norvasc and HCTZ. ECG ordered.",
+    "ground_truth": {
+      "conditions": ["hypertension"],
+      "symptoms": ["headache", "dizziness"],
+      "medications": ["amlodipine", "hydrochlorothiazide"],
+      "procedures": ["electrocardiogram"],
+      "icd10_codes": ["I10", "R51.9", "R42"]
+    }
+  },
+  {
+    "id": "eval-036",
+    "note": "STEMI and congestive heart failure. Chest pain and shortness of breath noted. Aspirin and Lasix given. ECG and echocardiogram ordered.",
+    "ground_truth": {
+      "conditions": ["ST-elevation myocardial infarction", "congestive heart failure"],
+      "symptoms": ["chest pain", "shortness of breath"],
+      "medications": ["aspirin", "furosemide"],
+      "procedures": ["electrocardiogram", "echocardiogram"],
+      "icd10_codes": ["I21.3", "I50.9", "R07.9", "R06.02"]
+    }
+  },
+  {
+    "id": "eval-037",
+    "note": "Migraine with nausea and dizziness. Sumatriptan given. CT scan ordered.",
+    "ground_truth": {
+      "conditions": ["migraine"],
+      "symptoms": ["nausea", "dizziness"],
+      "medications": ["sumatriptan"],
+      "procedures": ["computed tomography"],
+      "icd10_codes": ["G43.909", "R11.0", "R42"]
+    }
+  },
+  {
+    "id": "eval-038",
+    "note": "Depression with fatigue and insomnia. Zoloft continued. Blood work ordered.",
+    "ground_truth": {
+      "conditions": ["major depressive disorder"],
+      "symptoms": ["fatigue"],
+      "medications": ["sertraline"],
+      "procedures": ["laboratory panel"],
+      "icd10_codes": ["F32.9", "R53.83"]
+    }
+  },
+  {
+    "id": "eval-039",
+    "note": "Hyperlipidemia and HTN. Reports chest pain. Atorvastatin and lisinopril continued. Stress test ordered.",
+    "ground_truth": {
+      "conditions": ["hyperlipidemia", "hypertension"],
+      "symptoms": ["chest pain"],
+      "medications": ["atorvastatin", "lisinopril"],
+      "procedures": ["cardiac stress test"],
+      "icd10_codes": ["E78.5", "I10", "R07.9"]
+    }
+  },
+  {
+    "id": "eval-040",
+    "note": "UTI and pneumonia. Dysuria, fever, and cough reported. Macrobid and amoxicillin prescribed. UA and CXR ordered.",
+    "ground_truth": {
+      "conditions": ["urinary tract infection", "pneumonia"],
+      "symptoms": ["dysuria", "fever", "cough"],
+      "medications": ["nitrofurantoin", "amoxicillin"],
+      "procedures": ["urinalysis", "chest radiograph"],
+      "icd10_codes": ["N39.0", "J18.9", "R30.0", "R50.9", "R05.9"]
+    }
+  },
+  {
+    "id": "eval-041",
+    "note": "Asthma and CHF with SOB and swelling. Albuterol and furosemide prescribed. Echo and spirometry ordered.",
+    "ground_truth": {
+      "conditions": ["asthma", "congestive heart failure"],
+      "symptoms": ["shortness of breath", "edema"],
+      "medications": ["albuterol", "furosemide"],
+      "procedures": ["echocardiogram", "spirometry"],
+      "icd10_codes": ["J45.909", "I50.9", "R06.02"]
+    }
+  },
+  {
+    "id": "eval-042",
+    "note": "DM2 with migraine. Reports headache and nausea. Metformin and sumatriptan prescribed. MRI ordered.",
+    "ground_truth": {
+      "conditions": ["type 2 diabetes mellitus", "migraine"],
+      "symptoms": ["headache", "nausea"],
+      "medications": ["metformin", "sumatriptan"],
+      "procedures": ["magnetic resonance imaging"],
+      "icd10_codes": ["E11.9", "G43.909", "R51.9", "R11.0"]
+    }
+  },
+  {
+    "id": "eval-043",
+    "note": "Hypertension, depression, and hyperlipidemia. Fatigue reported. Lisinopril, Zoloft, and Lipitor continued. Labs ordered.",
+    "ground_truth": {
+      "conditions": ["hypertension", "major depressive disorder", "hyperlipidemia"],
+      "symptoms": ["fatigue"],
+      "medications": ["lisinopril", "sertraline", "atorvastatin"],
+      "procedures": ["laboratory panel"],
+      "icd10_codes": ["I10", "F32.9", "E78.5", "R53.83"]
+    }
+  },
+  {
+    "id": "eval-044",
+    "note": "Pneumonia with abdominal pain and fever. Azithromycin prescribed. CT and CBC ordered.",
+    "ground_truth": {
+      "conditions": ["pneumonia"],
+      "symptoms": ["abdominal pain", "fever"],
+      "medications": ["azithromycin"],
+      "procedures": ["computed tomography", "complete blood count"],
+      "icd10_codes": ["J18.9", "R10.9", "R50.9"]
+    }
+  },
+  {
+    "id": "eval-045",
+    "note": "STEMI with nausea and chest pain. Aspirin administered. ECG and stress test ordered.",
+    "ground_truth": {
+      "conditions": ["ST-elevation myocardial infarction"],
+      "symptoms": ["nausea", "chest pain"],
+      "medications": ["aspirin"],
+      "procedures": ["electrocardiogram", "cardiac stress test"],
+      "icd10_codes": ["I21.3", "R11.0", "R07.9"]
+    }
+  },
+  {
+    "id": "eval-046",
+    "note": "Type 2 diabetes mellitus and asthma. Reports cough and fatigue. Insulin and ProAir prescribed. Spirometry and labs ordered.",
+    "ground_truth": {
+      "conditions": ["type 2 diabetes mellitus", "asthma"],
+      "symptoms": ["cough", "fatigue"],
+      "medications": ["insulin", "albuterol"],
+      "procedures": ["spirometry", "laboratory panel"],
+      "icd10_codes": ["E11.9", "J45.909", "R05.9", "R53.83"]
+    }
+  },
+  {
+    "id": "eval-047",
+    "note": "CHF and hyperlipidemia follow-up. Reports dizziness. Furosemide and atorvastatin continued. Echocardiogram ordered.",
+    "ground_truth": {
+      "conditions": ["congestive heart failure", "hyperlipidemia"],
+      "symptoms": ["dizziness"],
+      "medications": ["furosemide", "atorvastatin"],
+      "procedures": ["echocardiogram"],
+      "icd10_codes": ["I50.9", "E78.5", "R42"]
+    }
+  },
+  {
+    "id": "eval-048",
+    "note": "UTI with dysuria and nausea. Nitrofurantoin prescribed. Urinalysis and blood work ordered.",
+    "ground_truth": {
+      "conditions": ["urinary tract infection"],
+      "symptoms": ["dysuria", "nausea"],
+      "medications": ["nitrofurantoin"],
+      "procedures": ["urinalysis", "laboratory panel"],
+      "icd10_codes": ["N39.0", "R30.0", "R11.0"]
+    }
+  },
+  {
+    "id": "eval-049",
+    "note": "Migraine, hypertension, and depression. Symptoms include headache and dizziness. Sumatriptan, amlodipine, and sertraline prescribed. MRI ordered.",
+    "ground_truth": {
+      "conditions": ["migraine", "hypertension", "major depressive disorder"],
+      "symptoms": ["headache", "dizziness"],
+      "medications": ["sumatriptan", "amlodipine", "sertraline"],
+      "procedures": ["magnetic resonance imaging"],
+      "icd10_codes": ["G43.909", "I10", "F32.9", "R51.9", "R42"]
+    }
+  },
+  {
+    "id": "eval-050",
+    "note": "Assessment: high blood pressure, type 2 diabetes, pneumonia, and asthma. Reports cough, fever, and shortness of breath. Metformin, lisinopril, azithromycin, and albuterol prescribed. Chest x-ray and spirometry ordered.",
+    "ground_truth": {
+      "conditions": ["hypertension", "type 2 diabetes mellitus", "pneumonia", "asthma"],
+      "symptoms": ["cough", "fever", "shortness of breath"],
+      "medications": ["metformin", "lisinopril", "azithromycin", "albuterol"],
+      "procedures": ["chest radiograph", "spirometry"],
+      "icd10_codes": ["I10", "E11.9", "J18.9", "J45.909", "R05.9", "R50.9", "R06.02"]
+    }
+  }
+]

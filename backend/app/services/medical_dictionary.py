@@ -6,6 +6,7 @@ AbbreviationLexicon = dict[str, tuple[str, str]]
 COMMON_CONDITIONS: EntityLexicon = {
     "st-elevation myocardial infarction": "ST-elevation myocardial infarction",
     "st elevation myocardial infarction": "ST-elevation myocardial infarction",
+    "acute coronary syndrome": "acute coronary syndrome",
     "myocardial infarction": "myocardial infarction",
     "heart attack": "myocardial infarction",
     "congestive heart failure": "congestive heart failure",
@@ -143,6 +144,7 @@ COMMON_PROCEDURES: EntityLexicon = {
 
 ABBREVIATIONS: AbbreviationLexicon = {
     "stemi": ("condition", "ST-elevation myocardial infarction"),
+    "acs": ("condition", "acute coronary syndrome"),
     "chf": ("condition", "congestive heart failure"),
     "htn": ("condition", "hypertension"),
     "dm2": ("condition", "type 2 diabetes mellitus"),

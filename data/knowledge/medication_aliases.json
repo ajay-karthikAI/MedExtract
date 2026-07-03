@@ -1,0 +1,74 @@
+[
+  {
+    "generic": "furosemide",
+    "aliases": ["Lasix"],
+    "class": "loop diuretic",
+    "snippet": "Lasix is a common brand name for furosemide."
+  },
+  {
+    "generic": "lisinopril",
+    "aliases": ["Prinivil", "Zestril"],
+    "class": "ACE inhibitor",
+    "snippet": "Prinivil and Zestril are common brand names for lisinopril."
+  },
+  {
+    "generic": "metformin",
+    "aliases": ["Glucophage", "Glumetza"],
+    "class": "biguanide",
+    "snippet": "Glucophage is a common brand name for metformin."
+  },
+  {
+    "generic": "atorvastatin",
+    "aliases": ["Lipitor"],
+    "class": "statin",
+    "snippet": "Lipitor is a common brand name for atorvastatin."
+  },
+  {
+    "generic": "albuterol",
+    "aliases": ["ProAir", "Ventolin", "Proventil", "Ventolin HFA"],
+    "class": "short-acting beta agonist",
+    "snippet": "ProAir, Ventolin, and Proventil are common albuterol inhaler names."
+  },
+  {
+    "generic": "amlodipine",
+    "aliases": ["Norvasc"],
+    "class": "calcium channel blocker",
+    "snippet": "Norvasc is a common brand name for amlodipine."
+  },
+  {
+    "generic": "omeprazole",
+    "aliases": ["Prilosec"],
+    "class": "proton pump inhibitor",
+    "snippet": "Prilosec is a common brand name for omeprazole."
+  },
+  {
+    "generic": "levothyroxine",
+    "aliases": ["Synthroid", "Levoxyl"],
+    "class": "thyroid hormone replacement",
+    "snippet": "Synthroid and Levoxyl are common brand names for levothyroxine."
+  },
+  {
+    "generic": "sertraline",
+    "aliases": ["Zoloft"],
+    "class": "SSRI",
+    "snippet": "Zoloft is a common brand name for sertraline."
+  },
+  {
+    "generic": "sumatriptan",
+    "aliases": ["Imitrex"],
+    "class": "triptan",
+    "snippet": "Imitrex is a common brand name for sumatriptan."
+  },
+  {
+    "generic": "nitrofurantoin",
+    "aliases": ["Macrobid", "Macrodantin"],
+    "class": "antibiotic",
+    "snippet": "Macrobid and Macrodantin are common names for nitrofurantoin."
+  },
+  {
+    "generic": "hydrochlorothiazide",
+    "aliases": ["HCTZ", "Microzide"],
+    "class": "thiazide diuretic",
+    "snippet": "HCTZ is a common abbreviation for hydrochlorothiazide."
+  }
+]

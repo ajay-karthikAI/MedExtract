@@ -44,6 +44,13 @@ def run_startup_migrations() -> None:
         "ALTER TABLE entities ADD COLUMN IF NOT EXISTS span_start INTEGER",
         "ALTER TABLE entities ADD COLUMN IF NOT EXISTS span_end INTEGER",
         "ALTER TABLE entities ADD COLUMN IF NOT EXISTS confidence REAL NOT NULL DEFAULT 1.0",
+        "ALTER TABLE entities ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'rule'",
+        "ALTER TABLE entities ADD COLUMN IF NOT EXISTS warning TEXT",
+        "ALTER TABLE entities DROP CONSTRAINT IF EXISTS entities_source_check",
+        """
+        ALTER TABLE entities ADD CONSTRAINT entities_source_check
+        CHECK (source IN ('rule', 'model', 'both', 'ensemble_agreement'))
+        """,
         "ALTER TABLE icd10_suggestions ADD COLUMN IF NOT EXISTS confidence REAL NOT NULL DEFAULT 0.5",
         """
         CREATE TABLE IF NOT EXISTS benchmark_runs (

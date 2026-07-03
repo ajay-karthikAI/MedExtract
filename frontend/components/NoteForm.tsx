@@ -66,41 +66,6 @@ symptoms develop.`,
 const MAX_CHARS = 50_000;
 const ACCEPTED = [".pdf", ".txt"];
 
-function Icon({ name, className = "h-4 w-4" }: { name: string; className?: string }) {
-  const common = {
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 1.8,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    className,
-    "aria-hidden": true,
-  };
-  if (name === "upload") {
-    return (
-      <svg viewBox="0 0 24 24" {...common}>
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-        <path d="m17 8-5-5-5 5M12 3v12" />
-      </svg>
-    );
-  }
-  if (name === "chevron") {
-    return (
-      <svg viewBox="0 0 24 24" {...common}>
-        <path d="m6 9 6 6 6-6" />
-      </svg>
-    );
-  }
-  if (name === "spark") {
-    return (
-      <svg viewBox="0 0 24 24" {...common}>
-        <path d="M12 3v4M12 17v4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M3 12h4M17 12h4M4.2 19.8 7 17M17 7l2.8-2.8" />
-      </svg>
-    );
-  }
-  return null;
-}
-
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1_048_576) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -108,6 +73,8 @@ function formatBytes(bytes: number): string {
 }
 
 interface NoteFormProps {
+  note: string;
+  onNoteChange: (note: string) => void;
   onSubmit: (input: AnalyzeInput, framework: Framework) => void;
   loading: boolean;
 }
@@ -122,9 +89,9 @@ function FrameworkSelector({
   models: ModelInfo[];
 }) {
   return (
-    <section className="rounded-lg border border-white/10 bg-[#0b1119]/90 p-5">
-      <div className="mb-4 text-sm font-semibold text-white">Models</div>
-      <div className="grid gap-3 sm:grid-cols-3">
+    <div className="border-t border-[var(--rule)] px-4 py-3">
+      <p className="chart-label mb-2">Model route</p>
+      <div className="grid gap-2 sm:grid-cols-3">
         {FRAMEWORKS.map((fw) => {
           const active = framework === fw.value;
           const model = models.find((m) => m.framework === fw.value);
@@ -133,53 +100,37 @@ function FrameworkSelector({
               key={fw.value}
               type="button"
               onClick={() => setFramework(fw.value)}
-              className={`rounded-lg border p-4 text-left transition ${
+              className={`focus-ring min-h-12 border px-3 py-2 text-left text-[11px] transition ${
                 active
-                  ? "border-blue-500/40 bg-blue-500/10"
-                  : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.05]"
+                  ? "border-[var(--ink)] bg-[var(--paper-muted)]"
+                  : "border-[var(--rule)] hover:border-[var(--rule-strong)]"
               }`}
             >
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-sm font-semibold text-white">{fw.label}</span>
-                <span
-                  className={`rounded-md px-2 py-0.5 text-[11px] font-medium ${
-                    model?.status === "available"
-                      ? "bg-emerald-500/10 text-emerald-300"
-                      : "bg-slate-700/70 text-slate-300"
-                  }`}
-                >
-                  {model?.status === "available" ? "Active" : "Ready"}
-                </span>
-              </div>
-              <p className="mt-3 min-h-8 text-xs leading-relaxed text-slate-500">
-                {model?.model_name ?? "Rules + dictionary layer"}
-              </p>
-              <div className="mt-4 h-2 w-24 rounded-full bg-slate-800">
-                <div className={`h-full rounded-full ${active ? "w-16 bg-blue-500" : "w-10 bg-slate-600"}`} />
-              </div>
+              <span className="block font-semibold">{fw.label}</span>
+              <span className="mt-1 block truncate text-[var(--ink-muted)]">
+                {model?.status === "available" ? "available" : "placeholder"} · {model?.model_name ?? "rule fallback"}
+              </span>
             </button>
           );
         })}
       </div>
-    </section>
+    </div>
   );
 }
 
-export function NoteForm({ onSubmit, loading }: NoteFormProps) {
-  const [note, setNote] = useState(SAMPLES[0].text);
+export function NoteForm({ note, onNoteChange, onSubmit, loading }: NoteFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
-  const [dragging, setDragging] = useState(false);
   const [framework, setFramework] = useState<Framework>("pytorch");
   const [models, setModels] = useState<ModelInfo[]>([]);
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    getModels().then(setModels).catch(() => {});
+    getModels().then(setModels).catch(() => setModels([]));
   }, []);
 
   const lineNumbers = useMemo(() => {
-    const count = Math.max(note.split("\n").length, 16);
+    const count = Math.max(note.split("\n").length, 20);
     return Array.from({ length: count }, (_, index) => index + 1);
   }, [note]);
 
@@ -198,145 +149,98 @@ export function NoteForm({ onSubmit, loading }: NoteFormProps) {
   }
 
   return (
-    <div className="space-y-2">
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (!canSubmit) return;
-          onSubmit(file ? { kind: "file", file } : { kind: "text", note: note.trim() }, framework);
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (!canSubmit) return;
+        onSubmit(file ? { kind: "file", file } : { kind: "text", note: note.trim() }, framework);
+      }}
+      className="chart-paper overflow-hidden"
+    >
+      <input
+        ref={fileInput}
+        type="file"
+        accept={ACCEPTED.join(",")}
+        className="hidden"
+        onChange={(event) => {
+          acceptFile(event.target.files?.[0]);
+          event.target.value = "";
         }}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragging(true);
-        }}
-        onDragLeave={(e) => {
-          if (e.currentTarget === e.target) setDragging(false);
-        }}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDragging(false);
-          acceptFile(e.dataTransfer.files?.[0]);
-        }}
-        className={`rounded-lg border bg-[#0b1119]/90 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.35)] transition ${
-          dragging ? "border-blue-400/70 ring-2 ring-blue-500/20" : "border-white/10"
-        }`}
-      >
-        <input
-          ref={fileInput}
-          type="file"
-          accept={ACCEPTED.join(",")}
-          className="hidden"
-          onChange={(e) => {
-            acceptFile(e.target.files?.[0]);
-            e.target.value = "";
-          }}
-        />
+      />
 
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <label htmlFor="note" className="text-base font-semibold text-white">
-            Clinical note
-          </label>
-          {!file && (
-            <label className="relative">
-              <span className="sr-only">Sample note</span>
-              <select
-                value={SAMPLES.find((sample) => sample.text === note)?.label ?? ""}
-                onChange={(event) => {
-                  const sample = SAMPLES.find((item) => item.label === event.target.value);
-                  if (sample) setNote(sample.text);
-                }}
-                className="h-9 appearance-none rounded-lg border border-white/10 bg-white/[0.04] pl-3 pr-9 text-sm font-medium text-slate-100 outline-none transition hover:bg-white/[0.07] focus:border-blue-500"
-              >
-                <option value="" className="bg-slate-950">Samples</option>
-                {SAMPLES.map((sample) => (
-                  <option key={sample.label} value={sample.label} className="bg-slate-950">
-                    {sample.label}
-                  </option>
-                ))}
-              </select>
-              <Icon name="chevron" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            </label>
-          )}
+      <div className="flex items-center justify-between border-b border-[var(--rule)] px-4 py-3">
+        <div>
+          <p className="chart-label">Clinical note</p>
+          <p className="mt-1 text-[11px] text-[var(--ink-soft)]">editor · synthetic notes only</p>
         </div>
-
-        <div className="min-h-[430px] overflow-hidden rounded-lg border border-white/10 bg-[#070b11]">
-          {file ? (
-            <div className="flex h-[430px] items-center justify-center p-6">
-              <div className="w-full max-w-md rounded-lg border border-blue-500/20 bg-blue-500/10 p-5">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-500/15 text-blue-300">
-                    <Icon name="upload" className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-white">{file.name}</p>
-                    <p className="text-xs text-slate-400">{formatBytes(file.size)}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setFile(null)}
-                    className="rounded-lg border border-white/10 px-3 py-1.5 text-sm text-slate-300 transition hover:bg-white/[0.06] hover:text-white"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-[48px_1fr]">
-              <div className="select-none border-r border-white/10 bg-white/[0.02] px-4 py-4 text-right font-mono text-[13px] leading-7 text-slate-600">
-                {lineNumbers.map((line) => (
-                  <div key={line}>{line}</div>
-                ))}
-              </div>
-              <textarea
-                id="note"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                maxLength={MAX_CHARS}
-                spellCheck={false}
-                className="min-h-[430px] w-full resize-y border-0 bg-transparent px-5 py-4 font-mono text-[13px] leading-7 text-slate-100 outline-none placeholder:text-slate-600"
-              />
-            </div>
-          )}
-        </div>
-
-        <button
-          type="button"
-          onClick={() => fileInput.current?.click()}
-          className="mt-4 flex w-full items-center justify-between rounded-lg border border-white/10 bg-white/[0.02] px-4 py-3 text-left transition hover:bg-white/[0.04]"
-        >
-          <span className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 text-slate-400">
-              <Icon name="upload" />
-            </span>
-            <span>
-              <span className="block text-sm font-medium text-slate-200">Upload PDF or TXT</span>
-              <span className="block text-xs text-slate-500">Drag and drop a file, or click to browse</span>
-            </span>
-          </span>
-          <span className="hidden text-xs text-slate-500 sm:inline">TXT, PDF up to 25MB</span>
-        </button>
-
-        {fileError && <p className="mt-2 text-sm text-red-300">{fileError}</p>}
-
         <button
           type="submit"
           disabled={!canSubmit}
-          className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(37,99,235,0.35)] transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
+          className="focus-ring bg-[var(--primary)] px-4 py-2 text-[11px] font-semibold text-[var(--primary-ink)] disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {loading ? (
-            <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
-              <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" strokeWidth="3" />
-            </svg>
-          ) : (
-            <Icon name="spark" />
-          )}
-          {loading ? "Analyzing..." : file ? "Analyze document" : "Analyze note"}
+          {loading ? "ANALYZING..." : file ? "ANALYZE DOCUMENT" : "ANALYZE NOTE"}
         </button>
-      </form>
+      </div>
+
+      {file ? (
+        <div className="flex min-h-[520px] items-center justify-center p-6">
+          <div className="w-full max-w-md border border-[var(--rule)] bg-[var(--paper-muted)] p-4">
+            <p className="chart-label">Uploaded file</p>
+            <p className="mt-2 truncate text-[13px] font-semibold">{file.name}</p>
+            <p className="mt-1 text-[12px] text-[var(--ink-muted)]">{formatBytes(file.size)}</p>
+            <button
+              type="button"
+              onClick={() => setFile(null)}
+              className="focus-ring mt-4 border border-[var(--rule)] px-3 py-1.5 text-[11px] font-semibold text-[var(--ink-muted)]"
+            >
+              REMOVE FILE
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="grid min-h-[520px] grid-cols-[48px_1fr]">
+          <div className="select-none border-r border-[var(--rule)] bg-[var(--paper-muted)] px-3 py-4 text-right text-[12px] leading-7 text-[var(--ink-soft)]">
+            {lineNumbers.map((line) => (
+              <div key={line}>{line}</div>
+            ))}
+          </div>
+          <textarea
+            value={note}
+            onChange={(event) => onNoteChange(event.target.value)}
+            maxLength={MAX_CHARS}
+            spellCheck={false}
+            className="min-h-[520px] w-full resize-y border-0 bg-transparent px-5 py-4 text-[13px] leading-7 text-[var(--ink)] outline-none placeholder:text-[var(--ink-soft)]"
+          />
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center gap-3 border-t border-[var(--rule)] px-4 py-3 text-[11px] text-[var(--ink-muted)]">
+        <span className="chart-label mr-1">Inputs</span>
+        {SAMPLES.map((sample) => (
+          <button
+            key={sample.label}
+            type="button"
+            onClick={() => {
+              setFile(null);
+              onNoteChange(sample.text);
+            }}
+            className="focus-ring underline-offset-4 hover:underline"
+          >
+            {sample.label}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() => fileInput.current?.click()}
+          className="focus-ring underline-offset-4 hover:underline"
+        >
+          upload PDF/TXT
+        </button>
+        {fileError && <span className="text-[var(--alert)]">{fileError}</span>}
+        <span className="ml-auto">{note.length.toLocaleString()} / {MAX_CHARS.toLocaleString()}</span>
+      </div>
 
       <FrameworkSelector framework={framework} setFramework={setFramework} models={models} />
-    </div>
+    </form>
   );
 }

@@ -8,12 +8,12 @@ export const metadata: Metadata = {
     "Extract conditions, symptoms, medications, procedures, and ICD-10 suggestions from clinical notes.",
 };
 
-const THEME_INIT = `(function(){try{document.documentElement.classList.add("dark");localStorage.setItem("theme","dark");}catch(e){}})();`;
+const THEME_INIT = `(function(){try{if(localStorage.getItem("theme")==="dark"){document.documentElement.classList.add("dark");}}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen bg-[#03070c] text-slate-100 antialiased">
+      <body className="min-h-screen antialiased">
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
         <AppShell>{children}</AppShell>
       </body>

@@ -1,0 +1,106 @@
+[
+  {
+    "code": "E11.9",
+    "name": "type 2 diabetes mellitus",
+    "category": "condition",
+    "description": "Type 2 diabetes mellitus without complications",
+    "aliases": ["type 2 diabetes", "type ii diabetes", "diabetes mellitus type 2", "dm2", "t2dm"],
+    "snippet": "E11.9 describes type 2 diabetes mellitus without documented complications."
+  },
+  {
+    "code": "I10",
+    "name": "hypertension",
+    "category": "condition",
+    "description": "Essential (primary) hypertension",
+    "aliases": ["essential hypertension", "high blood pressure", "htn"],
+    "snippet": "I10 describes essential or primary hypertension."
+  },
+  {
+    "code": "E78.5",
+    "name": "hyperlipidemia",
+    "category": "condition",
+    "description": "Hyperlipidemia, unspecified",
+    "aliases": ["high cholesterol", "hld", "dyslipidemia"],
+    "snippet": "E78.5 describes unspecified hyperlipidemia."
+  },
+  {
+    "code": "J18.9",
+    "name": "pneumonia",
+    "category": "condition",
+    "description": "Pneumonia, unspecified organism",
+    "aliases": ["pna", "community acquired pneumonia"],
+    "snippet": "J18.9 describes pneumonia when the organism is not specified."
+  },
+  {
+    "code": "J45.909",
+    "name": "asthma",
+    "category": "condition",
+    "description": "Unspecified asthma, uncomplicated",
+    "aliases": ["reactive airway disease", "rad", "bronchial asthma"],
+    "snippet": "J45.909 describes uncomplicated asthma without a specified severity."
+  },
+  {
+    "code": "I50.9",
+    "name": "congestive heart failure",
+    "category": "condition",
+    "description": "Heart failure, unspecified",
+    "aliases": ["heart failure", "chf"],
+    "snippet": "I50.9 describes heart failure when type and acuity are not specified."
+  },
+  {
+    "code": "I21.3",
+    "name": "ST-elevation myocardial infarction",
+    "category": "condition",
+    "description": "ST elevation (STEMI) myocardial infarction of unspecified site",
+    "aliases": ["stemi", "st elevation myocardial infarction", "st elevation mi"],
+    "snippet": "I21.3 describes ST-elevation myocardial infarction when the site is not specified."
+  },
+  {
+    "code": "I24.9",
+    "name": "acute coronary syndrome",
+    "category": "condition",
+    "description": "Acute ischemic heart disease, unspecified",
+    "aliases": ["acs"],
+    "snippet": "I24.9 describes acute ischemic heart disease when the exact type is not specified."
+  },
+  {
+    "code": "F32.9",
+    "name": "major depressive disorder",
+    "category": "condition",
+    "description": "Major depressive disorder, single episode, unspecified",
+    "aliases": ["depression", "mdd", "depressive disorder"],
+    "snippet": "F32.9 describes a single unspecified episode of major depressive disorder."
+  },
+  {
+    "code": "G43.909",
+    "name": "migraine",
+    "category": "condition",
+    "description": "Migraine, unspecified, not intractable, without status migrainosus",
+    "aliases": ["migraine headache"],
+    "snippet": "G43.909 describes unspecified migraine without intractable features or status migrainosus."
+  },
+  {
+    "code": "N39.0",
+    "name": "urinary tract infection",
+    "category": "condition",
+    "description": "Urinary tract infection, site not specified",
+    "aliases": ["uti", "urine infection"],
+    "snippet": "N39.0 describes urinary tract infection when the site is not specified."
+  },
+  {
+    "code": "R07.9",
+    "name": "chest pain",
+    "category": "symptom",
+    "description": "Chest pain, unspecified",
+    "aliases": ["cp"],
+    "snippet": "R07.9 describes unspecified chest pain."
+  },
+  {
+    "code": "R06.02",
+    "name": "shortness of breath",
+    "category": "symptom",
+    "description": "Shortness of breath",
+    "aliases": ["sob", "dyspnea"],
+    "snippet": "R06.02 describes shortness of breath."
+  }
+]

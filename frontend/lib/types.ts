@@ -9,6 +9,8 @@ export interface Entity {
   span_start: number | null;
   span_end: number | null;
   confidence: number;
+  source: "rule" | "model" | "both" | "ensemble_agreement";
+  warning: string | null;
 }
 
 export interface IcdCode {
@@ -30,6 +32,7 @@ export interface AnalyzeResponse {
   patient_summary: string;
   model_used: string;
   confidence: number;
+  framework_votes: Record<Framework, string[]>;
   disclaimer: string;
 }
 

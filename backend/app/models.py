@@ -61,6 +61,8 @@ class Entity(Base):
     span_start: Mapped[int | None]
     span_end: Mapped[int | None]
     confidence: Mapped[float] = mapped_column(server_default=sql_text("1.0"))
+    source: Mapped[str] = mapped_column(Text, nullable=False, server_default="rule")
+    warning: Mapped[str | None] = mapped_column(Text)
 
     extraction: Mapped[Extraction] = relationship(back_populates="entities")
 

@@ -5,6 +5,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 EntityCategory = str  # 'condition' | 'symptom' | 'medication' | 'procedure'
+EntitySource = Literal["rule", "model", "both", "ensemble_agreement"]
 Framework = Literal["pytorch", "tensorflow", "jax"]
 
 
@@ -27,6 +28,8 @@ class EntityOut(BaseModel):
     span_start: int | None = None
     span_end: int | None = None
     confidence: float = 0.0
+    source: EntitySource = "rule"
+    warning: str | None = None
 
 
 class Icd10Out(BaseModel):
@@ -96,6 +99,9 @@ class AnalyzeResponse(BaseModel):
     patient_summary: str = ""
     model_used: str
     confidence: float = 0.0
+    framework_votes: dict[str, list[str]] = Field(
+        default_factory=lambda: {"pytorch": [], "tensorflow": [], "jax": []}
+    )
     disclaimer: str = (
         "Automated extraction for informational purposes only. "
         "Not medical advice. ICD-10 suggestions require human review."

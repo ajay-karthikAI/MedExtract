@@ -42,7 +42,7 @@ services:
     volumes:
       - ./backend/app:/code/app
       - ./ml:/code/ml:ro
-      - ./data/sample_notes:/code/data/sample_notes:ro
+      - ./data:/code/data:ro
 
   frontend:
     build: ./frontend

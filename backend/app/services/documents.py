@@ -2,8 +2,6 @@
 
 import io
 
-from pypdf import PdfReader
-
 ALLOWED_EXTENSIONS = {".pdf", ".txt"}
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
 MAX_TEXT_CHARS = 50_000
@@ -42,6 +40,13 @@ def extract_text(filename: str, data: bytes) -> str:
 
 
 def _pdf_text(data: bytes) -> str:
+    try:
+        from pypdf import PdfReader
+    except ImportError as exc:
+        raise DocumentError(
+            "PDF parsing is unavailable because the pypdf dependency is not installed."
+        ) from exc
+
     try:
         reader = PdfReader(io.BytesIO(data))
         pages = [page.extract_text() or "" for page in reader.pages]

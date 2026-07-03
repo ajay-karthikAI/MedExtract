@@ -1,0 +1,194 @@
+[
+  {
+    "name": "Type 2 diabetes mellitus",
+    "code": "E11.9",
+    "description": "Type 2 diabetes mellitus without complications",
+    "synonyms": [
+      "type 2 diabetes",
+      "type ii diabetes",
+      "type 2 diabetes mellitus",
+      "diabetes mellitus",
+      "diabetes",
+      "dm2",
+      "t2dm"
+    ]
+  },
+  {
+    "name": "Hypertension",
+    "code": "I10",
+    "description": "Essential (primary) hypertension",
+    "synonyms": [
+      "hypertension",
+      "high blood pressure",
+      "htn"
+    ]
+  },
+  {
+    "name": "Hyperlipidemia",
+    "code": "E78.5",
+    "description": "Hyperlipidemia, unspecified",
+    "synonyms": [
+      "hyperlipidemia",
+      "high cholesterol",
+      "hld"
+    ]
+  },
+  {
+    "name": "Pneumonia",
+    "code": "J18.9",
+    "description": "Pneumonia, unspecified organism",
+    "synonyms": [
+      "pneumonia",
+      "pna"
+    ]
+  },
+  {
+    "name": "Asthma",
+    "code": "J45.909",
+    "description": "Unspecified asthma, uncomplicated",
+    "synonyms": [
+      "asthma",
+      "reactive airway disease",
+      "rad"
+    ]
+  },
+  {
+    "name": "Congestive heart failure",
+    "code": "I50.9",
+    "description": "Heart failure, unspecified",
+    "synonyms": [
+      "congestive heart failure",
+      "heart failure",
+      "chf"
+    ]
+  },
+  {
+    "name": "STEMI",
+    "code": "I21.3",
+    "description": "ST elevation (STEMI) myocardial infarction of unspecified site",
+    "synonyms": [
+      "stemi",
+      "st-elevation myocardial infarction",
+      "st elevation myocardial infarction",
+      "st elevation mi"
+    ]
+  },
+  {
+    "name": "Depression",
+    "code": "F32.9",
+    "description": "Major depressive disorder, single episode, unspecified",
+    "synonyms": [
+      "depression",
+      "major depressive disorder",
+      "mdd"
+    ]
+  },
+  {
+    "name": "Migraine",
+    "code": "G43.909",
+    "description": "Migraine, unspecified, not intractable",
+    "synonyms": [
+      "migraine",
+      "migraine headache"
+    ]
+  },
+  {
+    "name": "UTI",
+    "code": "N39.0",
+    "description": "Urinary tract infection, site not specified",
+    "synonyms": [
+      "uti",
+      "urinary tract infection"
+    ]
+  },
+  {
+    "name": "Myocardial infarction",
+    "code": "I21.9",
+    "description": "Acute myocardial infarction, unspecified",
+    "synonyms": [
+      "myocardial infarction",
+      "heart attack",
+      "mi"
+    ]
+  },
+  {
+    "name": "Chronic obstructive pulmonary disease",
+    "code": "J44.9",
+    "description": "Chronic obstructive pulmonary disease, unspecified",
+    "synonyms": [
+      "chronic obstructive pulmonary disease",
+      "copd"
+    ]
+  },
+  {
+    "name": "Atrial fibrillation",
+    "code": "I48.91",
+    "description": "Unspecified atrial fibrillation",
+    "synonyms": [
+      "atrial fibrillation",
+      "afib",
+      "a fib"
+    ]
+  },
+  {
+    "name": "Coronary artery disease",
+    "code": "I25.10",
+    "description": "Atherosclerotic heart disease of native coronary artery without angina pectoris",
+    "synonyms": [
+      "coronary artery disease",
+      "cad"
+    ]
+  },
+  {
+    "name": "Gastroesophageal reflux disease",
+    "code": "K21.9",
+    "description": "Gastro-esophageal reflux disease without esophagitis",
+    "synonyms": [
+      "gastroesophageal reflux disease",
+      "gerd",
+      "acid reflux"
+    ]
+  },
+  {
+    "name": "Anemia",
+    "code": "D64.9",
+    "description": "Anemia, unspecified",
+    "synonyms": [
+      "anemia"
+    ]
+  },
+  {
+    "name": "Hypothyroidism",
+    "code": "E03.9",
+    "description": "Hypothyroidism, unspecified",
+    "synonyms": [
+      "hypothyroidism"
+    ]
+  },
+  {
+    "name": "Anxiety disorder",
+    "code": "F41.9",
+    "description": "Anxiety disorder, unspecified",
+    "synonyms": [
+      "anxiety",
+      "anxiety disorder"
+    ]
+  },
+  {
+    "name": "Osteoarthritis",
+    "code": "M19.90",
+    "description": "Unspecified osteoarthritis, unspecified site",
+    "synonyms": [
+      "osteoarthritis"
+    ]
+  },
+  {
+    "name": "Acute coronary syndrome",
+    "code": "I24.9",
+    "description": "Acute ischemic heart disease, unspecified",
+    "synonyms": [
+      "acute coronary syndrome",
+      "acs"
+    ]
+  }
+]

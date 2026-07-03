@@ -42,7 +42,7 @@ def _analyze_and_persist(
     source: str = "api",
 ) -> schemas.AnalyzeResponse:
     try:
-        result = pipelines.extract(text, framework)
+        result, framework_votes = pipelines.extract_ensemble(text)
     except Exception as exc:
         logger.exception("Analysis failed before persistence")
         raise HTTPException(status_code=500, detail="Analysis failed. Please try again.") from exc
@@ -78,6 +78,7 @@ def _analyze_and_persist(
         patient_summary=result.patient_summary,
         model_used=model_used,
         confidence=confidence.overall_confidence(entities, result.icd10_suggestions),
+        framework_votes=framework_votes,
     )
 
 

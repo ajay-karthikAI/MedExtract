@@ -1,261 +1,398 @@
-import { entityCount, frameworkLabel, percent } from "@/lib/display";
+"use client";
+
+import { useEffect, useMemo, useRef, type CSSProperties } from "react";
+import {
+  buildAnnotationSegments,
+  buildEntityAnnotations,
+  type EntityAnnotation,
+} from "@/lib/annotate";
+import { entityCount, percent } from "@/lib/display";
 import type { AnalyzeResponse, Entity, EntityGroups, IcdCode } from "@/lib/types";
 
 type CategoryKey = keyof EntityGroups;
 
-const RESULT_CATEGORIES: {
-  key: CategoryKey;
-  label: string;
-  icon: string;
-  accent: string;
-  iconText: string;
-}[] = [
-  {
-    key: "conditions",
-    label: "Conditions",
-    icon: "heart",
-    accent: "bg-blue-500/15 border-blue-500/20",
-    iconText: "text-blue-300",
-  },
-  {
-    key: "symptoms",
-    label: "Symptoms",
-    icon: "flask",
-    accent: "bg-violet-500/15 border-violet-500/20",
-    iconText: "text-violet-300",
-  },
-  {
-    key: "medications",
-    label: "Medications",
-    icon: "pill",
-    accent: "bg-teal-500/15 border-teal-500/20",
-    iconText: "text-teal-300",
-  },
-  {
-    key: "procedures",
-    label: "Procedures / Tests",
-    icon: "grid",
-    accent: "bg-amber-500/15 border-amber-500/20",
-    iconText: "text-amber-300",
-  },
+export type EntityRow = {
+  id: string;
+  entity: Entity;
+  categoryKey: CategoryKey;
+  categoryLabel: string;
+};
+
+const CATEGORIES: Array<{ key: CategoryKey; label: string; token: string }> = [
+  { key: "conditions", label: "Conditions", token: "condition" },
+  { key: "symptoms", label: "Symptoms", token: "symptom" },
+  { key: "medications", label: "Medications", token: "medication" },
+  { key: "procedures", label: "Procedures / Tests", token: "procedure" },
 ];
 
-function Icon({ name, className = "h-4 w-4" }: { name: string; className?: string }) {
-  const common = {
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 1.8,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    className,
-    "aria-hidden": true,
-  };
-  if (name === "heart") {
-    return (
-      <svg viewBox="0 0 24 24" {...common}>
-        <path d="M12 21s-7-4.6-9.5-8.5C.6 9.3 2.4 5.5 6 5.5c2 0 3.2 1 4 2.2.8-1.2 2-2.2 4-2.2 3.6 0 5.4 3.8 3.5 7C19 16.4 12 21 12 21z" />
-      </svg>
-    );
-  }
-  if (name === "flask") {
-    return (
-      <svg viewBox="0 0 24 24" {...common}>
-        <path d="M9 3h6M10 3v5l-5.5 9.5A2.3 2.3 0 0 0 6.5 21h11a2.3 2.3 0 0 0 2-3.5L14 8V3" />
-        <path d="M7.5 16h9" />
-      </svg>
-    );
-  }
-  if (name === "pill") {
-    return (
-      <svg viewBox="0 0 24 24" {...common}>
-        <path d="m10.5 20.5 10-10a5 5 0 0 0-7-7l-10 10a5 5 0 0 0 7 7Z" />
-        <path d="m8.5 8.5 7 7" />
-      </svg>
-    );
-  }
-  if (name === "grid") {
-    return (
-      <svg viewBox="0 0 24 24" {...common}>
-        <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" />
-      </svg>
-    );
-  }
-  if (name === "users") {
-    return (
-      <svg viewBox="0 0 24 24" {...common}>
-        <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
-        <circle cx="9.5" cy="7" r="4" />
-        <path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8" />
-      </svg>
-    );
-  }
-  if (name === "shield") {
-    return (
-      <svg viewBox="0 0 24 24" {...common}>
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
-        <path d="m9 12 2 2 4-5" />
-      </svg>
-    );
-  }
-  return null;
-}
-
-function confidenceValue(value: number): number {
-  return Math.max(0, Math.min(100, Math.round(value * 100)));
-}
-
-function ConfidenceRing({ confidence }: { confidence: number }) {
-  const value = confidenceValue(confidence);
-  const circumference = 2 * Math.PI * 18;
-  const offset = circumference - (circumference * value) / 100;
-
-  return (
-    <div className="relative h-14 w-14 shrink-0">
-      <svg viewBox="0 0 44 44" className="h-full w-full -rotate-90">
-        <circle cx="22" cy="22" r="18" stroke="rgb(30 41 59)" strokeWidth="4" fill="none" />
-        <circle
-          cx="22"
-          cy="22"
-          r="18"
-          stroke="rgb(37 99 235)"
-          strokeWidth="4"
-          fill="none"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-        />
-      </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
-        {value}%
-      </span>
-    </div>
-  );
-}
+const SOURCE_LABEL: Record<Entity["source"], string> = {
+  rule: "rule",
+  model: "model",
+  both: "both",
+  ensemble_agreement: "ensemble",
+};
 
 function entityName(entity: Entity): string {
-  return entity.normalized ?? entity.text;
+  return entity.normalized || entity.text;
 }
 
-function CategoryCard({ category, entities }: { category: (typeof RESULT_CATEGORIES)[number]; entities: Entity[] }) {
-  const visible = entities.slice(0, 5);
+function confidenceDecimal(value: number): string {
+  return value.toFixed(2);
+}
 
+function sourceConfidence(entity: Entity): string {
+  return `${SOURCE_LABEL[entity.source]} · ${confidenceDecimal(entity.confidence)}`;
+}
+
+function categoryToken(category: Entity["category"]): string {
+  if (category === "condition") return "condition";
+  if (category === "symptom") return "symptom";
+  if (category === "medication") return "medication";
+  return "procedure";
+}
+
+function tokenStyle(token: string): CSSProperties {
+  return {
+    ["--entity-color" as string]: `var(--${token})`,
+    ["--entity-bg" as string]: `var(--${token}-bg)`,
+  };
+}
+
+export function flattenEntityRows(groups: EntityGroups): EntityRow[] {
+  let index = 0;
+  return CATEGORIES.flatMap((category) =>
+    groups[category.key].map((entity) => ({
+      id: `${entity.category}:${entity.normalized || entity.text}:${entity.span_start ?? "x"}:${entity.span_end ?? "x"}:${index++}`,
+      entity,
+      categoryKey: category.key,
+      categoryLabel: category.label,
+    })),
+  );
+}
+
+function ConfidenceCells({ value }: { value: number }) {
+  const filled = Math.max(0, Math.min(5, Math.round(value * 5)));
+  const low = value < 0.5;
   return (
-    <section className="rounded-lg border border-white/10 bg-white/[0.035] p-4">
-      <header className="mb-4 flex items-center gap-3">
-        <div className={`flex h-9 w-9 items-center justify-center rounded-lg border ${category.accent} ${category.iconText}`}>
-          <Icon name={category.icon} />
-        </div>
-        <h3 className="flex-1 text-sm font-semibold text-white">{category.label}</h3>
-        <span className="rounded-md bg-white/[0.06] px-2 py-1 text-xs text-slate-300">
-          {entities.length} found
-        </span>
-      </header>
-      {visible.length === 0 ? (
-        <p className="text-sm text-slate-500">None detected</p>
-      ) : (
-        <ul className="space-y-2.5">
-          {visible.map((entity, index) => (
-            <li key={`${entity.text}-${index}`} className="flex items-center gap-3 text-sm">
-              <span className="min-w-0 flex-1 truncate text-slate-200" title={entityName(entity)}>
-                {entityName(entity)}
-              </span>
-              <span className="shrink-0 tabular-nums text-slate-300">{percent(entity.confidence)}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-      {entities.length > visible.length && (
-        <button type="button" className="mt-4 text-sm font-medium text-blue-400">
-          Show all
-        </button>
-      )}
+    <span className="inline-flex items-center gap-0.5" aria-label={`confidence ${percent(value)}`}>
+      {Array.from({ length: 5 }, (_, index) => (
+        <span
+          key={index}
+          className="h-3 w-1.5 border border-[var(--rule-strong)]"
+          style={{
+            background:
+              index < filled ? (low ? "var(--alert)" : "var(--ink)") : "transparent",
+          }}
+        />
+      ))}
+      {low && <span className="ml-1 text-[10px] font-bold text-[var(--alert)]">L</span>}
+    </span>
+  );
+}
+
+function Section({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <section className="border-t border-[var(--rule)] py-3 first:border-t-0 first:pt-0">
+      <h3 className="chart-label mb-2">{label}</h3>
+      {children}
     </section>
   );
 }
 
-export function CategoryGrid({ groups }: { groups: EntityGroups }) {
+function EmptyRow() {
+  return <p className="py-1 text-[12px] text-[var(--ink-soft)]">none detected</p>;
+}
+
+function EntityRailRow({
+  row,
+  active,
+  onFocus,
+}: {
+  row: EntityRow;
+  active: boolean;
+  onFocus: (id: string) => void;
+}) {
+  const ref = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (active) ref.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [active]);
+
+  const token = categoryToken(row.entity.category);
+
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      {RESULT_CATEGORIES.map((category) => (
-        <CategoryCard key={category.key} category={category} entities={groups[category.key]} />
-      ))}
+    <button
+      ref={ref}
+      type="button"
+      onMouseEnter={() => onFocus(row.id)}
+      onFocus={() => onFocus(row.id)}
+      onClick={() => onFocus(row.id)}
+      className={`focus-ring grid min-h-8 w-full grid-cols-[12px_minmax(0,1fr)_92px_48px] items-center gap-2 border-l-2 px-1.5 py-1 text-left text-[12px] transition ${
+        active ? "bg-[var(--paper-muted)]" : "border-l-transparent hover:bg-[var(--paper-muted)]"
+      }`}
+      style={{
+        borderLeftColor: active ? `var(--${token})` : "transparent",
+      }}
+    >
+      <span className="h-2 w-2 border" style={{ borderColor: `var(--${token})`, background: `var(--${token}-bg)` }} />
+      <span className="min-w-0 truncate font-medium" title={entityName(row.entity)}>
+        {entityName(row.entity)}
+      </span>
+      <span className="text-right text-[11px] text-[var(--ink-muted)]">{sourceConfidence(row.entity)}</span>
+      <span className="justify-self-end">
+        <ConfidenceCells value={row.entity.confidence} />
+      </span>
+      <span className="col-span-4 truncate pl-5 text-[11px] text-[var(--ink-soft)]">
+        evidence: "{row.entity.text}"
+      </span>
+      {row.entity.warning && (
+        <span className="col-span-4 pl-5 text-[11px] text-[var(--alert)]">{row.entity.warning}</span>
+      )}
+    </button>
+  );
+}
+
+function entityIdsForCode(code: IcdCode, rows: EntityRow[]): string[] {
+  const description = code.description.toLowerCase();
+  const hits = rows
+    .filter(({ entity }) => entity.category === "condition" || entity.category === "symptom")
+    .filter(({ entity }) => {
+      const normalized = entityName(entity).toLowerCase();
+      return description.includes(normalized) || normalized.split(/\s+/).some((word) => word.length > 4 && description.includes(word));
+    })
+    .map((row) => row.id);
+  return hits.length > 0 ? hits : rows.slice(0, 1).map((row) => row.id);
+}
+
+function IcdRail({
+  codes,
+  rows,
+  onFocus,
+}: {
+  codes: IcdCode[];
+  rows: EntityRow[];
+  onFocus: (id: string) => void;
+}) {
+  if (codes.length === 0) return <EmptyRow />;
+  return (
+    <div className="divide-y divide-[var(--rule)]">
+      {codes.map((code, index) => {
+        const evidenceIds = entityIdsForCode(code, rows);
+        return (
+          <button
+            key={`${code.code}-${index}`}
+            type="button"
+            onMouseEnter={() => evidenceIds[0] && onFocus(evidenceIds[0])}
+            onFocus={() => evidenceIds[0] && onFocus(evidenceIds[0])}
+            onClick={() => evidenceIds[0] && onFocus(evidenceIds[0])}
+            className="focus-ring grid min-h-9 w-full grid-cols-[72px_minmax(0,1fr)_74px] items-center gap-2 py-1 text-left text-[12px] hover:bg-[var(--paper-muted)]"
+          >
+            <span className="font-semibold">{code.code}</span>
+            <span className="truncate text-[var(--ink-muted)]" title={code.description}>
+              {index === 0 && <span className="mr-2 text-[10px] font-bold tracking-[0.08em]">PRIMARY</span>}
+              {code.description}
+            </span>
+            <span className="text-right text-[11px] text-[var(--ink-muted)]">icd · {confidenceDecimal(code.confidence)}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
 
-export function SummaryCard({ summary }: { summary: string }) {
+export function FindingsRail({
+  result,
+  activeId,
+  onActiveIdChange,
+}: {
+  result: AnalyzeResponse;
+  activeId: string | null;
+  onActiveIdChange: (id: string) => void;
+}) {
+  const rows = useMemo(() => flattenEntityRows(result.entities), [result.entities]);
+
   return (
-    <section className="overflow-hidden rounded-lg border border-white/10 bg-white/[0.035]">
-      <header className="flex items-center gap-3 border-b border-white/10 px-5 py-4">
-        <Icon name="users" className="h-4 w-4 text-cyan-300" />
-        <h3 className="text-sm font-semibold text-white">Patient-friendly summary</h3>
-      </header>
-      <div className="px-5 py-5">
-        <p className="text-sm leading-7 text-slate-300">{summary}</p>
-        <p className="mt-5 text-sm font-medium leading-7 text-slate-200">
-          This is a simplified summary, not a diagnosis.
+    <aside className="chart-paper h-fit p-4">
+      <div className="mb-3 border-b border-[var(--rule)] pb-3">
+        <p className="chart-label">Extraction report</p>
+        <p className="mt-1 text-[12px] text-[var(--ink-muted)]">
+          overall {confidenceDecimal(result.confidence)} — mean of entity confidences (heuristic)
+        </p>
+        <p className="mt-1 text-[11px] text-[var(--ink-soft)]">
+          High confidence does not replace clinical review.
         </p>
       </div>
-      <footer className="flex items-center gap-2 border-t border-white/10 px-5 py-4 text-xs text-slate-500">
-        <Icon name="shield" className="h-4 w-4 text-blue-400" />
-        Generated by MedExtract
-      </footer>
-    </section>
+
+      {CATEGORIES.map((category) => {
+        const categoryRows = rows.filter((row) => row.categoryKey === category.key);
+        return (
+          <Section key={category.key} label={category.label.toUpperCase()}>
+            {categoryRows.length === 0 ? (
+              <EmptyRow />
+            ) : (
+              <div className="divide-y divide-[var(--rule)]">
+                {categoryRows.map((row) => (
+                  <EntityRailRow
+                    key={row.id}
+                    row={row}
+                    active={activeId === row.id}
+                    onFocus={onActiveIdChange}
+                  />
+                ))}
+              </div>
+            )}
+          </Section>
+        );
+      })}
+
+      <Section label="ICD-10 SUGGESTIONS">
+        <IcdRail codes={result.icd_codes} rows={rows} onFocus={onActiveIdChange} />
+      </Section>
+
+      <Section label="PATIENT SUMMARY">
+        <SummaryCard summary={result.patient_summary} compact />
+      </Section>
+
+      <p className="border-t border-[var(--rule)] pt-3 text-[11px] leading-5 text-[var(--ink-soft)]">
+        {result.disclaimer}
+      </p>
+    </aside>
   );
 }
 
-export function IcdList({ codes }: { codes: IcdCode[] }) {
-  const visible = codes.slice(0, 5);
+export function AnnotatedDocument({
+  note,
+  rows,
+  activeId,
+  onActiveIdChange,
+  onEdit,
+}: {
+  note: string;
+  rows: EntityRow[];
+  activeId: string | null;
+  onActiveIdChange: (id: string) => void;
+  onEdit: () => void;
+}) {
+  const annotations = useMemo(
+    () => buildEntityAnnotations(note, rows.map(({ id, entity }) => ({ id, entity }))),
+    [note, rows],
+  );
+  const segments = useMemo(() => buildAnnotationSegments(note, annotations), [note, annotations]);
+  const refs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  useEffect(() => {
+    if (!activeId) return;
+    refs.current[activeId]?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [activeId]);
 
   return (
-    <section className="overflow-hidden rounded-lg border border-white/10 bg-white/[0.035]">
-      <header className="border-b border-white/10 px-5 py-4">
-        <h3 className="text-sm font-semibold text-white">Top ICD-10 suggestions</h3>
-      </header>
-      <div className="space-y-4 px-5 py-5">
-        {visible.length === 0 ? (
-          <p className="text-sm text-slate-500">No suggestions for this note</p>
-        ) : (
-          visible.map((code, index) => (
-            <div key={code.code}>
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-sm font-semibold text-white">{code.code}</span>
-                {index === 0 && (
-                  <span className="rounded-md bg-blue-600 px-2 py-0.5 text-[11px] font-semibold text-white">
-                    Primary
-                  </span>
-                )}
-                <span className="ml-auto text-xs tabular-nums text-slate-500">
-                  {percent(code.confidence)}
-                </span>
-              </div>
-              <p className="mt-1 text-xs leading-5 text-slate-400">{code.description}</p>
-            </div>
-          ))
-        )}
-        {codes.length > visible.length && (
-          <button type="button" className="text-sm font-medium text-blue-400">
-            Show more
-          </button>
-        )}
+    <section className="chart-paper min-h-[calc(100vh-104px)] overflow-hidden">
+      <div className="flex items-center justify-between border-b border-[var(--rule)] px-4 py-3">
+        <div>
+          <p className="chart-label">Clinical note</p>
+          <p className="mt-1 text-[11px] text-[var(--ink-soft)]">{annotations.length} inline annotations</p>
+        </div>
+        <button
+          type="button"
+          onClick={onEdit}
+          className="focus-ring border border-[var(--rule)] px-3 py-1.5 text-[11px] font-semibold text-[var(--ink-muted)] hover:text-[var(--ink)]"
+        >
+          EDIT NOTE
+        </button>
       </div>
+
+      <pre className="whitespace-pre-wrap px-5 py-5 text-[13px] leading-7 text-[var(--ink)]">
+        {segments.map((segment, index) => {
+          if (segment.kind === "text") {
+            return <span key={`${segment.start}-${segment.end}-${index}`}>{segment.text}</span>;
+          }
+          const { annotation } = segment;
+          const token = categoryToken(annotation.entity.category);
+          const active = activeId === annotation.id;
+          return (
+            <button
+              key={`${annotation.id}-${annotation.start}-${annotation.end}-${index}`}
+              ref={(node) => {
+                refs.current[annotation.id] = node;
+              }}
+              type="button"
+              role="button"
+              tabIndex={0}
+              aria-label={`${entityName(annotation.entity)}, ${annotation.entity.category}, confidence ${confidenceDecimal(annotation.entity.confidence)}`}
+              onMouseEnter={() => onActiveIdChange(annotation.id)}
+              onFocus={() => onActiveIdChange(annotation.id)}
+              onClick={() => onActiveIdChange(annotation.id)}
+              className="focus-ring mx-0.5 border-b-[1.5px] px-0.5 transition"
+              style={{
+                ...tokenStyle(token),
+                color: "var(--ink)",
+                borderBottomColor: `var(--${token})`,
+                background: active ? `color-mix(in srgb, var(--${token}-bg) 70%, var(--paper-muted))` : `var(--${token}-bg)`,
+              }}
+            >
+              {segment.text}
+            </button>
+          );
+        })}
+      </pre>
     </section>
   );
 }
 
 export function EmptyResults() {
   return (
-    <section className="flex min-h-[640px] rounded-lg border border-white/10 bg-[#0b1119]/90 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
-      <div className="m-auto max-w-sm text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/10 text-blue-300">
-          <Icon name="shield" className="h-5 w-5" />
-        </div>
-        <h2 className="mt-4 text-lg font-semibold text-white">Analysis results</h2>
-        <p className="mt-2 text-sm leading-6 text-slate-500">
-          Run an analysis to populate entities, ICD-10 suggestions, confidence, and summary.
+    <section className="chart-paper flex min-h-[calc(100vh-104px)] items-center justify-center p-8 text-center">
+      <div>
+        <p className="chart-label">Extraction report</p>
+        <p className="mt-3 max-w-sm text-[13px] leading-6 text-[var(--ink-muted)]">
+          Run an analysis to annotate the note and populate clinically anchored findings.
         </p>
       </div>
     </section>
+  );
+}
+
+export function SummaryCard({ summary, compact = false }: { summary: string; compact?: boolean }) {
+  return (
+    <div className={`summary-copy text-[13px] leading-6 text-[var(--ink)] ${compact ? "" : "chart-paper p-4"}`}>
+      <p>{summary}</p>
+    </div>
+  );
+}
+
+export function IcdList({ codes }: { codes: IcdCode[] }) {
+  if (codes.length === 0) {
+    return <div className="chart-paper p-4 text-[12px] text-[var(--ink-muted)]">No ICD-10 suggestions.</div>;
+  }
+  return (
+    <div className="chart-paper divide-y divide-[var(--rule)]">
+      {codes.map((code, index) => (
+        <div key={`${code.code}-${index}`} className="grid grid-cols-[72px_minmax(0,1fr)_72px] gap-3 px-4 py-2 text-[12px]">
+          <span className="font-semibold">{code.code}</span>
+          <span className="truncate text-[var(--ink-muted)]">{code.description}</span>
+          <span className="text-right">{confidenceDecimal(code.confidence)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function CategoryGrid({ groups }: { groups: EntityGroups }) {
+  const rows = flattenEntityRows(groups);
+  return (
+    <div className="chart-paper divide-y divide-[var(--rule)]">
+      {rows.length === 0 ? (
+        <p className="p-4 text-[12px] text-[var(--ink-muted)]">No entities detected.</p>
+      ) : (
+        rows.map((row) => (
+          <div key={row.id} className="grid grid-cols-[120px_minmax(0,1fr)_80px] gap-3 px-4 py-2 text-[12px]">
+            <span className="text-[var(--ink-muted)]">{row.categoryLabel}</span>
+            <span className="truncate">{entityName(row.entity)}</span>
+            <span className="text-right">{confidenceDecimal(row.entity.confidence)}</span>
+          </div>
+        ))
+      )}
+    </div>
   );
 }
 
@@ -267,49 +404,8 @@ export function AnalysisResults({
   framework: string;
 }) {
   return (
-    <section className="rounded-lg border border-white/10 bg-[#0b1119]/90 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
-      <header className="mb-5 flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-semibold text-white">Analysis results</h2>
-          <p className="mt-1 text-xs text-slate-500">
-            {entityCount(result.entities)} entities · {result.icd_codes.length} ICD hints ·{" "}
-            {frameworkLabel(framework)}
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="hidden text-xs text-slate-500 sm:inline">Confidence overview</span>
-          <ConfidenceRing confidence={result.confidence} />
-        </div>
-      </header>
-
-      <div className="mb-4 flex gap-7 border-b border-white/10 text-sm">
-        {["Overview", "Entities", "Codes", "Summary", "Evidence"].map((tab, index) => (
-          <button
-            key={tab}
-            type="button"
-            className={`relative pb-3 font-medium ${
-              index === 0 ? "text-blue-400" : "text-slate-500 hover:text-slate-300"
-            }`}
-          >
-            {tab}
-            {index === 0 && <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-blue-500" />}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(260px,0.9fr)]">
-        <div className="space-y-3">
-          {RESULT_CATEGORIES.map((category) => (
-            <CategoryCard key={category.key} category={category} entities={result.entities[category.key]} />
-          ))}
-        </div>
-        <div className="space-y-4">
-          <IcdList codes={result.icd_codes} />
-          <SummaryCard summary={result.patient_summary} />
-        </div>
-      </div>
-
-      <p className="mt-4 text-xs leading-6 text-slate-500">{result.disclaimer}</p>
-    </section>
+    <div className="chart-paper p-4 text-[12px] text-[var(--ink-muted)]">
+      {entityCount(result.entities)} entities · {result.icd_codes.length} ICD hints · {framework}
+    </div>
   );
 }
