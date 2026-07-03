@@ -44,6 +44,28 @@ export interface HistoryItem extends AnalyzeResponse {
 
 export type AnalyzeInput = { kind: "text"; note: string } | { kind: "file"; file: File };
 
+export interface BenchmarkFrameworkResult {
+  framework: Framework;
+  model_name: string;
+  status: "available" | "placeholder";
+  mean_ms: number;
+  p50_ms: number;
+  p95_ms: number;
+  mean_confidence: number;
+  mean_entities: number;
+  mean_icd_codes: number;
+  rss_mb: number | null;
+  rss_delta_mb: number | null;
+}
+
+export interface BenchmarkRun {
+  id: string;
+  notes_count: number;
+  iterations: number;
+  results: BenchmarkFrameworkResult[];
+  created_at: string;
+}
+
 export interface ModelInfo {
   framework: Framework;
   model_name: string;

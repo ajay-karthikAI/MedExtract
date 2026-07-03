@@ -1,10 +1,11 @@
 """Framework dispatch for extraction.
 
-framework="pytorch" routes to the transformer pipeline in ml/pytorch_pipeline/
-when its dependencies are installed; anything else (and any load failure) falls
-back to the rule-based placeholder, tagged with the requested framework.
+pytorch and tensorflow route to their pipelines under ml/ when the framework's
+dependencies are installed; anything else (and any load failure) falls back to
+the rule-based placeholder, tagged with the requested framework.
 """
 
+import importlib
 import logging
 import sys
 from pathlib import Path
@@ -17,64 +18,82 @@ logger = logging.getLogger(__name__)
 
 _DEFAULT_ML_DIR = Path(__file__).resolve().parents[3] / "ml"
 
-_pytorch_inference = None  # loaded module, or None
-_pytorch_error: str | None = None  # first load failure, cached so we probe once
+# framework -> (inference module under ml/, description when available)
+_ML_PIPELINES: dict[str, tuple[str, str]] = {
+    "pytorch": (
+        "pytorch_pipeline.inference",
+        "Transformer NER via Hugging Face token classification (CPU). "
+        "Fine-tune with ml/pytorch_pipeline/train.py; ICD-10 suggestion is "
+        "still a dictionary placeholder.",
+    ),
+    "tensorflow": (
+        "tensorflow_pipeline.inference",
+        "Keras note-category classifier + lexicon entity extraction with "
+        "model-assisted confidence. Train with ml/tensorflow_pipeline/train.py; "
+        "ICD-10 suggestion is still a dictionary placeholder.",
+    ),
+    "jax": (
+        "jax_pipeline.inference",
+        "Flax note-category classifier + shared lexicon extraction — research/"
+        "benchmarking twin of the TensorFlow pipeline. Train with "
+        "ml/jax_pipeline/train.py; not intended for production.",
+    ),
+}
+
+_loaded: dict[str, object] = {}  # framework -> inference module
+_errors: dict[str, str] = {}  # framework -> first load failure (probed once)
 
 
-def _load_pytorch():
-    global _pytorch_inference, _pytorch_error
-    if _pytorch_inference is not None or _pytorch_error is not None:
+def _load(framework: str) -> None:
+    if framework in _loaded or framework in _errors or framework not in _ML_PIPELINES:
         return
+    module_path, _ = _ML_PIPELINES[framework]
     try:
         ml_dir = Path(settings.ml_dir) if settings.ml_dir else _DEFAULT_ML_DIR
         if str(ml_dir) not in sys.path:
             sys.path.insert(0, str(ml_dir))
-        from pytorch_pipeline import inference  # type: ignore[import-not-found]
-
-        if not inference.is_available():
+        module = importlib.import_module(module_path)
+        if not module.is_available():
+            package = module_path.split(".")[0]
             raise RuntimeError(
-                "torch/transformers not installed — pip install -r ml/pytorch_pipeline/requirements.txt"
+                f"ML dependencies not installed — pip install -r ml/{package}/requirements.txt"
             )
-        _pytorch_inference = inference
+        _loaded[framework] = module
     except Exception as exc:
-        _pytorch_error = str(exc)
-        logger.warning("PyTorch pipeline unavailable, using rule-based fallback: %s", exc)
+        _errors[framework] = str(exc)
+        logger.warning(
+            "%s pipeline unavailable, using rule-based fallback: %s", framework, exc
+        )
 
 
 def extract(text: str, framework: Framework) -> ExtractionResult:
-    if framework == "pytorch":
-        _load_pytorch()
-        if _pytorch_inference is not None:
-            return ExtractionResult.model_validate(_pytorch_inference.extract(text))
+    _load(framework)
+    module = _loaded.get(framework)
+    if module is not None:
+        return ExtractionResult.model_validate(module.extract(text))
     result = rule_based.extract(text)
     result.model_name = f"{framework}-{rule_based.MODEL_NAME}"
     return result
 
 
 def model_info(framework: Framework) -> ModelInfo:
-    if framework == "pytorch":
-        _load_pytorch()
-        if _pytorch_inference is not None:
-            return ModelInfo(
-                framework="pytorch",
-                model_name=_pytorch_inference.model_name(),
-                status="available",
-                description=(
-                    "Transformer NER via Hugging Face token classification (CPU). "
-                    "Fine-tune with ml/pytorch_pipeline/train.py; ICD-10 suggestion is "
-                    "still a dictionary placeholder."
-                ),
-            )
+    _load(framework)
+    module = _loaded.get(framework)
+    if module is not None:
+        return ModelInfo(
+            framework=framework,
+            model_name=module.model_name(),
+            status="available",
+            description=_ML_PIPELINES[framework][1],
+        )
+    reason = (
+        f" Unavailable because: {_errors[framework]}"
+        if framework in _errors
+        else f" A training skeleton lives at ml/skeletons/{framework}/train.py."
+    )
     return ModelInfo(
         framework=framework,
         model_name=f"{framework}-{rule_based.MODEL_NAME}",
         status="placeholder",
-        description=(
-            f"Rule-based dictionary extractor standing in for a {framework} NER model."
-            + (
-                f" Unavailable because: {_pytorch_error}"
-                if framework == "pytorch" and _pytorch_error
-                else f" Train the real one with ml/{framework}/train.py."
-            )
-        ),
+        description=f"Rule-based dictionary extractor standing in for a {framework} NER model.{reason}",
     )

@@ -20,9 +20,8 @@ def test_models_lists_all_frameworks():
     assert {m["framework"] for m in body} == {"pytorch", "tensorflow", "jax"}
     for m in body:
         assert m["model_name"]
-        # pytorch is "available" when ml/pytorch_pipeline deps are installed
-        expected = {"placeholder", "available"} if m["framework"] == "pytorch" else {"placeholder"}
-        assert m["status"] in expected
+        # each framework is "available" when its ml/ pipeline deps are installed
+        assert m["status"] in {"placeholder", "available"}
 
 
 def test_analyze_note_rejects_unknown_framework():

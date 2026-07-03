@@ -105,8 +105,10 @@ export function NoteForm({ onSubmit, loading }: NoteFormProps) {
         setDragging(false);
         acceptFile(e.dataTransfer.files?.[0]);
       }}
-      className={`rounded-2xl border bg-white p-6 shadow-sm transition ${
-        dragging ? "border-teal-400 ring-2 ring-teal-500/20" : "border-slate-200"
+      className={`rounded-2xl border bg-white p-6 shadow-sm transition dark:bg-slate-900 ${
+        dragging
+          ? "border-teal-400 ring-2 ring-teal-500/20 dark:border-teal-600"
+          : "border-slate-200 dark:border-slate-800"
       }`}
     >
       <input
@@ -121,18 +123,18 @@ export function NoteForm({ onSubmit, loading }: NoteFormProps) {
       />
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <label htmlFor="note" className="text-sm font-semibold text-slate-800">
+        <label htmlFor="note" className="text-sm font-semibold text-slate-800 dark:text-slate-200">
           Clinical note
         </label>
         {!file && (
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-slate-400">Samples:</span>
+            <span className="text-slate-400 dark:text-slate-500">Samples:</span>
             {SAMPLES.map((s) => (
               <button
                 key={s.label}
                 type="button"
                 onClick={() => setNote(s.text)}
-                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 font-medium text-slate-600 transition hover:border-teal-300 hover:bg-teal-50 hover:text-teal-700"
+                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 font-medium text-slate-600 transition hover:border-teal-300 hover:bg-teal-50 hover:text-teal-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-teal-800 dark:hover:bg-teal-950/40 dark:hover:text-teal-300"
               >
                 {s.label}
               </button>
@@ -141,7 +143,7 @@ export function NoteForm({ onSubmit, loading }: NoteFormProps) {
               <button
                 type="button"
                 onClick={() => setNote("")}
-                className="px-2 py-1 font-medium text-slate-400 transition hover:text-slate-600"
+                className="px-2 py-1 font-medium text-slate-400 transition hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
               >
                 Clear
               </button>
@@ -151,8 +153,8 @@ export function NoteForm({ onSubmit, loading }: NoteFormProps) {
       </div>
 
       {file ? (
-        <div className="flex items-center gap-4 rounded-xl border border-teal-200 bg-teal-50/50 px-5 py-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-teal-700 shadow-sm">
+        <div className="flex items-center gap-4 rounded-xl border border-teal-200 bg-teal-50/50 px-5 py-4 dark:border-teal-900 dark:bg-teal-950/30">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-teal-700 shadow-sm dark:bg-slate-900 dark:text-teal-400">
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -168,15 +170,15 @@ export function NoteForm({ onSubmit, loading }: NoteFormProps) {
             </svg>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-slate-800">{file.name}</p>
-            <p className="text-xs text-slate-500">
+            <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-200">{file.name}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {formatBytes(file.size)} · text will be extracted server-side
             </p>
           </div>
           <button
             type="button"
             onClick={() => setFile(null)}
-            className="shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-500 transition hover:bg-white hover:text-slate-800"
+            className="shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-500 transition hover:bg-white hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
             Remove
           </button>
@@ -190,13 +192,13 @@ export function NoteForm({ onSubmit, loading }: NoteFormProps) {
             rows={11}
             maxLength={MAX_CHARS}
             placeholder="Paste a synthetic clinical note here — chief complaint, HPI, PMH, medications, plan… (never enter real patient data)"
-            className="w-full resize-y rounded-xl border border-slate-200 bg-slate-50/50 p-4 text-sm leading-relaxed text-slate-800 placeholder:text-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+            className="w-full resize-y rounded-xl border border-slate-200 bg-slate-50/50 p-4 text-sm leading-relaxed text-slate-800 placeholder:text-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:bg-slate-950"
           />
           <div className="mt-1 flex items-center justify-between">
             <button
               type="button"
               onClick={() => fileInput.current?.click()}
-              className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-50 hover:text-teal-700"
+              className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-50 hover:text-teal-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-teal-300"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -212,24 +214,24 @@ export function NoteForm({ onSubmit, loading }: NoteFormProps) {
               </svg>
               Upload a PDF or TXT — or drag it anywhere onto this card
             </button>
-            <span className="text-[11px] tabular-nums text-slate-300">
+            <span className="text-[11px] tabular-nums text-slate-300 dark:text-slate-600">
               {note.length.toLocaleString()} / {MAX_CHARS.toLocaleString()}
             </span>
           </div>
         </>
       )}
 
-      {fileError && <p className="mt-2 text-sm text-red-600">{fileError}</p>}
+      {fileError && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{fileError}</p>}
 
       <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="mb-1.5 text-xs font-medium uppercase tracking-wide text-slate-400">
+          <div className="mb-1.5 text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
             Inference framework
           </div>
           <div
             role="radiogroup"
             aria-label="Inference framework"
-            className="inline-flex rounded-xl bg-slate-100 p-1"
+            className="inline-flex rounded-xl bg-slate-100 p-1 dark:bg-slate-800"
           >
             {FRAMEWORKS.map((f) => (
               <button
@@ -240,8 +242,8 @@ export function NoteForm({ onSubmit, loading }: NoteFormProps) {
                 onClick={() => setFramework(f.value)}
                 className={`rounded-lg px-4 py-1.5 text-sm font-medium transition ${
                   framework === f.value
-                    ? "bg-white text-slate-900 shadow-sm"
-                    : "text-slate-500 hover:text-slate-800"
+                    ? "bg-white text-slate-900 shadow-sm dark:bg-slate-950 dark:text-slate-100"
+                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
                 }`}
               >
                 {f.label}
@@ -249,10 +251,10 @@ export function NoteForm({ onSubmit, loading }: NoteFormProps) {
             ))}
           </div>
           {selectedModel && (
-            <div className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-400">
+            <div className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500">
               <span className="font-mono">{selectedModel.model_name}</span>
               {selectedModel.status === "placeholder" && (
-                <span className="rounded bg-slate-100 px-1.5 py-0.5 font-medium text-slate-500">
+                <span className="rounded bg-slate-100 px-1.5 py-0.5 font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                   placeholder
                 </span>
               )}

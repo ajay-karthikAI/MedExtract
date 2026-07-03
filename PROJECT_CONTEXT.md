@@ -19,10 +19,17 @@ _Last updated: 2026-07-02_
   `POST /api/extract` and `/api/notes` routes.
 - **Framework dispatch** (`backend/app/services/pipelines.py`): `pytorch` → transformer NER from
   `ml/pytorch_pipeline/` (fine-tuned checkpoint preferred, else pretrained
-  `d4data/biomedical-ner-all`); `tensorflow`/`jax` (or any load failure) → rule-based dictionary
-  extractor. `GET /models` reports which path actually serves (`available` vs `placeholder`).
+  `d4data/biomedical-ner-all`); `tensorflow` → `ml/tensorflow_pipeline/` (Keras note-category
+  classifier + lexicon extraction with model-assisted confidence); `jax` → `ml/jax_pipeline/`
+  (Flax research twin of the TF classifier, shared lexicon/dataset, for benchmarking). Any load
+  failure → rule-based dictionary extractor. `GET /models` reports which path actually serves
+  (`available` vs `placeholder`).
 - **Persistence:** every analysis writes `notes`, `extractions` (incl. `framework`), `entities`,
   and `icd10_suggestions` rows; `/history` reconstructs full results from the DB.
+- **Benchmarking:** `POST /benchmarks/run` times all three pipelines over the sample notes on the
+  API serving path (mean/p50/p95 ms, confidence, entity/ICD counts, approximate RSS) and stores
+  runs in `benchmark_runs` (JSONB); `GET /benchmarks` lists them; `/benchmarks` page charts them.
+  Missing tables are auto-created at backend startup (`Base.metadata.create_all`).
 - **Fine-tuned model:** DistilBERT token classifier trained on 300 synthetic templated notes
   (3 epochs); span-level F1 = 1.0 on held-out synthetic data and generalizes well to the sample
   notes. Checkpoint lives at `ml/pytorch_pipeline/checkpoints/medextract-ner/` (gitignored).
@@ -51,8 +58,10 @@ _Last updated: 2026-07-02_
   "high blood pressure" and "hypertension" are separate entities in transformer output.
 - [ ] **Confidence scores are partly heuristic** — rule-based entities use a fixed 0.6; ICD codes
   use fixed 0.35/0.5 bases; the overall score is a plain mean of whatever is present.
-- [ ] **TensorFlow and JAX pipelines don't exist** — both frameworks silently serve the rule-based
-  extractor (status is honest in `/models`, but there's no real model behind either).
+- [ ] **TensorFlow/JAX entity extraction is lexicon-bound** — their classifiers only categorize
+  the note and adjust confidences; unseen terms can't be extracted (unlike the PyTorch NER path).
+- [ ] **JAX pipeline is research-only by design** — a benchmarking twin of the TF pipeline that
+  imports its lexicon/dataset/helpers from `tensorflow_pipeline`; changes there affect both.
 - [ ] **Pretrained fallback model is weak on clinical-note formatting** — `d4data/biomedical-ner-all`
   misses terse section lists like `PMH: hypertension, …` (trained on narrative case reports);
   only the fine-tuned checkpoint handles them.
@@ -74,10 +83,15 @@ _Last updated: 2026-07-02_
 - [ ] **Legacy routes are dead surface** — `POST /api/extract` and `/api/notes` are no longer used
   by the UI (they predate `/analyze-note`) but remain served and semi-duplicated
   (`notes.py` has its own `_persist_extraction`).
-- [ ] **Summary/disclaimer logic is duplicated** — the patient-summary template exists in both
-  `backend/app/services/extraction.py` and `ml/pytorch_pipeline/inference.py`.
+- [ ] **Summary/ICD logic is triplicated** — the patient-summary template and ICD lookup tables
+  exist in `backend/app/services/extraction.py`, `ml/pytorch_pipeline/`, and
+  `ml/tensorflow_pipeline/`; they can drift apart.
 - [ ] **No DB-backed integration tests** — persistence paths (`/analyze-note`, `/analyze-file`,
-  `/history`) are only verified manually; API tests cover validation-only paths.
+  `/history`, `/benchmarks`) are only verified manually; API tests cover validation-only paths.
+- [ ] **Benchmark memory metric is process-level RSS** — approximate by nature; per-framework
+  deltas mainly capture lazy model loading and are near zero once models are warm.
+- [ ] **Benchmark runs are synchronous** — `POST /benchmarks/run` blocks the request (~a minute
+  cold, seconds warm); no background job or progress reporting.
 - [ ] **HF Hub download needed on first pretrained-model load** — offline first run of the pytorch
   path fails to the rule-based fallback; unauthenticated Hub requests are rate-limited (no
   `HF_TOKEN` configured).
@@ -101,5 +115,6 @@ _Last updated: 2026-07-02_
   plain `python3` will break.
 - [ ] **Port squatters** — other local services hold 5432 (`suno_postgres`), 8000 ("Re: Call"),
   and 3000 (a node process); MedExtract's defaults (5433/8010/3100) route around them.
-- [ ] **Old ml skeletons linger** — `ml/pytorch/` is superseded by `ml/pytorch_pipeline/` but
-  still present alongside the tensorflow/jax skeletons.
+- [ ] **Old ml skeletons linger** — superseded training skeletons live under `ml/skeletons/`
+  (moved there because a bare `ml/jax/` directory shadowed the real `jax` package as an implicit
+  namespace package and crashed Keras imports).

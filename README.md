@@ -39,9 +39,9 @@ MedExtract/
 ├── frontend/           # Next.js + TypeScript + Tailwind UI
 ├── db/init/            # PostgreSQL schema (applied on first container start)
 ├── ml/
-│   ├── pytorch/        # PyTorch NER experiments
-│   ├── tensorflow/     # TensorFlow experiments
-│   └── jax/            # JAX experiments
+│   ├── pytorch_pipeline/     # Working PyTorch NER pipeline (HF Transformers)
+│   ├── tensorflow_pipeline/  # Working TF/Keras classifier-assisted pipeline
+│   └── skeletons/            # Older per-framework training skeletons
 ├── data/sample_notes/  # Synthetic notes (NO real patient data)
 └── docker-compose.yml
 ```
@@ -91,6 +91,8 @@ npm run dev
 | POST   | `/analyze-file`       | Analyze an uploaded PDF/TXT note (multipart: `file`, `framework`) |
 | GET    | `/models`             | Available extraction models per framework    |
 | GET    | `/history`            | Past analyses, newest first                  |
+| POST   | `/benchmarks/run`     | Benchmark all frameworks over the sample notes; persists results |
+| GET    | `/benchmarks`         | Stored benchmark runs, newest first          |
 | POST   | `/api/notes`          | Submit a note; runs extraction, persists both |
 | GET    | `/api/notes`          | List submitted notes                         |
 | GET    | `/api/notes/{id}`     | Get a note with its extraction               |
@@ -111,12 +113,18 @@ Extraction is dispatched per framework (`backend/app/services/pipelines.py`):
 - **`framework="pytorch"`** → `ml/pytorch_pipeline/` — Hugging Face Transformers
   token-classification NER (a fine-tuned checkpoint if you've run
   `python -m pytorch_pipeline.train`, otherwise the pretrained
-  `d4data/biomedical-ner-all`). Requires `pip install -r ml/pytorch_pipeline/requirements.txt`
-  in the backend's environment; the slim Docker image excludes torch, so the
-  containerized backend falls back to rule-based for pytorch too.
-- **`tensorflow` / `jax`** (and any unavailable pipeline) → the
-  **rule/dictionary-based placeholder** in `backend/app/services/extraction.py`,
-  which needs zero ML dependencies.
+  `d4data/biomedical-ner-all`). Requires `pip install -r ml/pytorch_pipeline/requirements.txt`.
+- **`framework="tensorflow"`** → `ml/tensorflow_pipeline/` — a Keras note-category
+  classifier plus lexicon entity extraction with model-assisted confidence.
+  Requires `pip install -r ml/tensorflow_pipeline/requirements.txt` and a trained
+  checkpoint (`python -m tensorflow_pipeline.train`) for the confidence boost.
+- **`framework="jax"`** → `ml/jax_pipeline/` — a Flax research twin of the
+  TensorFlow classifier (shared lexicon/dataset) for benchmarking, not
+  production. Requires `pip install -r ml/jax_pipeline/requirements.txt`.
+- **Any unavailable pipeline** → the **rule/dictionary-based placeholder** in
+  `backend/app/services/extraction.py`, which needs zero ML dependencies. The
+  slim Docker image excludes all ML deps, so the containerized backend serves
+  the placeholder for every framework.
 
 `GET /models` reports which path each framework actually serves
 (`available` vs `placeholder`).

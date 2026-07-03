@@ -10,7 +10,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <article className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -19,14 +19,14 @@ function HistoryCard({ item }: { item: HistoryItem }) {
       >
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span className="text-sm font-medium text-slate-700">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
               {formatDate(item.created_at)}
             </span>
-            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
               {frameworkLabel(item.framework)}
             </span>
             {item.note_title && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-teal-700 ring-1 ring-inset ring-teal-200">
+              <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-teal-700 ring-1 ring-inset ring-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:ring-teal-900">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -42,21 +42,21 @@ function HistoryCard({ item }: { item: HistoryItem }) {
                 {item.note_title}
               </span>
             )}
-            <span className="hidden font-mono text-xs text-slate-400 sm:inline">
+            <span className="hidden font-mono text-xs text-slate-400 sm:inline dark:text-slate-500">
               {item.model_used}
             </span>
           </div>
-          <p className="mt-1 truncate text-sm text-slate-500">{item.note_preview}</p>
+          <p className="mt-1 truncate text-sm text-slate-500 dark:text-slate-400">{item.note_preview}</p>
         </div>
 
         <div className="hidden shrink-0 items-center gap-3 md:flex">
           {CATEGORIES.map(({ key, dot }) => (
-            <span key={key} className="flex items-center gap-1.5 text-xs tabular-nums text-slate-500">
+            <span key={key} className="flex items-center gap-1.5 text-xs tabular-nums text-slate-500 dark:text-slate-400">
               <span className={`h-2 w-2 rounded-full ${dot}`} aria-hidden />
               {item.entities[key].length}
             </span>
           ))}
-          <span className="w-12 text-right text-xs tabular-nums text-slate-400">
+          <span className="w-12 text-right text-xs tabular-nums text-slate-400 dark:text-slate-500">
             {percent(item.confidence)}
           </span>
         </div>
@@ -68,7 +68,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`}
+          className={`h-4 w-4 shrink-0 text-slate-400 transition-transform dark:text-slate-500 ${open ? "rotate-180" : ""}`}
           aria-hidden
         >
           <path d="m6 9 6 6 6-6" />
@@ -76,8 +76,8 @@ function HistoryCard({ item }: { item: HistoryItem }) {
       </button>
 
       {open && (
-        <div className="space-y-4 border-t border-slate-100 px-6 py-5">
-          <div className="text-xs text-slate-400 sm:hidden">
+        <div className="space-y-4 border-t border-slate-100 px-6 py-5 dark:border-slate-800">
+          <div className="text-xs text-slate-400 sm:hidden dark:text-slate-500">
             <span className="font-mono">{item.model_used}</span> ·{" "}
             {entityCount(item.entities)} entities · {percent(item.confidence)} confidence
           </div>
@@ -92,9 +92,9 @@ function HistoryCard({ item }: { item: HistoryItem }) {
 
 function SkeletonCard() {
   return (
-    <div className="animate-pulse rounded-2xl border border-slate-200 bg-white px-6 py-5">
-      <div className="h-3.5 w-56 rounded bg-slate-100" />
-      <div className="mt-2.5 h-3 w-full max-w-xl rounded bg-slate-100" />
+    <div className="animate-pulse rounded-2xl border border-slate-200 bg-white px-6 py-5 dark:border-slate-800 dark:bg-slate-900">
+      <div className="h-3.5 w-56 rounded bg-slate-100 dark:bg-slate-800" />
+      <div className="mt-2.5 h-3 w-full max-w-xl rounded bg-slate-100 dark:bg-slate-800" />
     </div>
   );
 }
@@ -117,26 +117,26 @@ export default function HistoryPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
             Analysis history
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Previous analyses, newest first{items ? ` · ${items.length} shown` : ""}.
           </p>
         </div>
         <button
           type="button"
           onClick={load}
-          className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
+          className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:text-slate-100"
         >
           Refresh
         </button>
       </div>
 
       {error && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
           <p className="font-medium">Couldn’t load history</p>
-          <p className="mt-0.5 text-red-600">{error}</p>
+          <p className="mt-0.5 text-red-600 dark:text-red-400">{error}</p>
         </div>
       )}
 
@@ -149,9 +149,9 @@ export default function HistoryPage() {
       )}
 
       {items !== null && items.length === 0 && (
-        <div className="rounded-2xl border-2 border-dashed border-slate-200 px-6 py-14 text-center">
-          <p className="text-sm font-medium text-slate-500">No analyses yet</p>
-          <p className="mt-1 text-sm text-slate-400">
+        <div className="rounded-2xl border-2 border-dashed border-slate-200 px-6 py-14 text-center dark:border-slate-800">
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">No analyses yet</p>
+          <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">
             Run your first analysis from the Analyze tab — results are saved here automatically.
           </p>
         </div>

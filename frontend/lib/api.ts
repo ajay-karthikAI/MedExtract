@@ -1,4 +1,10 @@
-import type { AnalyzeResponse, Framework, HistoryItem, ModelInfo } from "./types";
+import type {
+  AnalyzeResponse,
+  BenchmarkRun,
+  Framework,
+  HistoryItem,
+  ModelInfo,
+} from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8010";
 
@@ -46,4 +52,12 @@ export function getModels(): Promise<ModelInfo[]> {
 
 export function getHistory(limit = 50): Promise<HistoryItem[]> {
   return request<HistoryItem[]>(`/history?limit=${limit}`);
+}
+
+export function getBenchmarks(limit = 20): Promise<BenchmarkRun[]> {
+  return request<BenchmarkRun[]>(`/benchmarks?limit=${limit}`);
+}
+
+export function runBenchmark(iterations = 5): Promise<BenchmarkRun> {
+  return request<BenchmarkRun>(`/benchmarks/run?iterations=${iterations}`, { method: "POST" });
 }

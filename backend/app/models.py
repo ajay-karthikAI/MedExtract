@@ -3,7 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import ForeignKey, Text
 from sqlalchemy import text as sql_text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -79,3 +79,16 @@ class Icd10Suggestion(Base):
     confidence: Mapped[float] = mapped_column(server_default=sql_text("0.5"))
 
     extraction: Mapped[Extraction] = relationship(back_populates="icd10_suggestions")
+
+
+class BenchmarkRun(Base):
+    __tablename__ = "benchmark_runs"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, server_default=sql_text("gen_random_uuid()")
+    )
+    notes_count: Mapped[int] = mapped_column(nullable=False)
+    iterations: Mapped[int] = mapped_column(nullable=False)
+    # Per-framework metrics: [{framework, model_name, status, mean_ms, ...}, ...]
+    results: Mapped[list] = mapped_column(JSONB, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(server_default=sql_text("now()"))

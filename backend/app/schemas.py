@@ -116,3 +116,27 @@ class ModelInfo(BaseModel):
     model_name: str
     status: Literal["available", "placeholder"]
     description: str
+
+
+class BenchmarkFrameworkResult(BaseModel):
+    framework: Framework
+    model_name: str
+    status: Literal["available", "placeholder"]
+    mean_ms: float
+    p50_ms: float
+    p95_ms: float
+    mean_confidence: float
+    mean_entities: float
+    mean_icd_codes: float
+    rss_mb: float | None = None  # process RSS after this framework's runs (approximate)
+    rss_delta_mb: float | None = None  # RSS growth during this framework's runs (approximate)
+
+
+class BenchmarkRunOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    notes_count: int
+    iterations: int
+    results: list[BenchmarkFrameworkResult]
+    created_at: datetime
