@@ -26,7 +26,7 @@ class EntityOut(BaseModel):
     normalized: str | None = None
     span_start: int | None = None
     span_end: int | None = None
-    confidence: float = 1.0
+    confidence: float = 0.0
 
 
 class Icd10Out(BaseModel):
@@ -34,7 +34,7 @@ class Icd10Out(BaseModel):
 
     code: str
     description: str
-    confidence: float = 0.5
+    confidence: float = 0.0
 
 
 class ExtractionResult(BaseModel):

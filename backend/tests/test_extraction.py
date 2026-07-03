@@ -10,7 +10,7 @@ NOTE = (
 
 def test_extracts_all_categories():
     result = extract(NOTE)
-    assert {e.normalized for e in result.symptoms} == {"chest pain", "dyspnea"}
+    assert {e.normalized for e in result.symptoms} == {"chest pain", "shortness of breath"}
     assert {e.normalized for e in result.conditions} == {
         "hypertension",
         "type 2 diabetes mellitus",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AnalysisResults } from "@/components/AnalysisResults";
+import { AnalysisResults, EmptyResults } from "@/components/AnalysisResults";
 import { NoteForm } from "@/components/NoteForm";
 import { analyzeFile, analyzeNote } from "@/lib/api";
 import type { AnalyzeInput, AnalyzeResponse, Framework } from "@/lib/types";
@@ -31,68 +31,35 @@ export default function AnalyzePage() {
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-          Analyze a clinical note
-        </h1>
-        <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
-          Paste a free-text note or upload a PDF to extract conditions, symptoms, medications,
-          and procedures, with suggested ICD-10 codes and a patient-friendly summary. Every
-          analysis is saved to your history.
-        </p>
-      </div>
-
-      <NoteForm onSubmit={handleAnalyze} loading={loading} />
-
+    <div className="mx-auto max-w-[1380px] space-y-3">
       {error && (
-        <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            className="mt-0.5 h-4 w-4 shrink-0"
-            aria-hidden
-          >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 8v4M12 16h.01" />
-          </svg>
-          <div>
-            <p className="font-medium">Analysis failed</p>
-            <p className="mt-0.5 text-red-600 dark:text-red-400">{error}</p>
-          </div>
+        <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          <span className="font-semibold text-red-100">Analysis failed: </span>
+          {error}
         </div>
       )}
 
-      {result ? (
-        <AnalysisResults result={result} framework={framework} />
-      ) : (
-        !loading &&
-        !error && (
-          <div className="rounded-2xl border-2 border-dashed border-slate-200 px-6 py-14 text-center dark:border-slate-800">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="mx-auto h-8 w-8 text-slate-300 dark:text-slate-600"
-              aria-hidden
-            >
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <path d="M14 2v6h6M9 13h6M9 17h6" />
-            </svg>
-            <p className="mt-3 text-sm font-medium text-slate-500 dark:text-slate-400">No analysis yet</p>
-            <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">
-              Load a sample note above or paste your own, then press{" "}
-              <span className="font-medium text-slate-500 dark:text-slate-400">Analyze note</span>.
-            </p>
-          </div>
-        )
-      )}
+      <div className="grid gap-5 xl:grid-cols-[minmax(520px,0.92fr)_minmax(560px,1.08fr)]">
+        <NoteForm onSubmit={handleAnalyze} loading={loading} />
+        {result ? <AnalysisResults result={result} framework={framework} /> : <EmptyResults />}
+      </div>
+
+      <div className="flex items-center gap-2 text-xs text-slate-500">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="h-4 w-4 text-blue-400"
+          aria-hidden
+        >
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+          <path d="m9 12 2 2 4-5" />
+        </svg>
+        <span>Research and informational use only. Synthetic notes only.</span>
+      </div>
     </div>
   );
 }

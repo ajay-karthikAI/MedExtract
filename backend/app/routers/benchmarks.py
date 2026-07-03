@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session
 from app import models, schemas
 from app.database import get_db
 from app.routers.analyze import FRAMEWORKS
-from app.services import pipelines
+from app.services import confidence, pipelines
 from app.services.paths import sample_notes_dir
 
 router = APIRouter(tags=["benchmarks"])
@@ -82,8 +82,7 @@ def _rss_mb() -> float | None:
 
 def _confidence(result: schemas.ExtractionResult) -> float:
     entities = result.conditions + result.symptoms + result.medications + result.procedures
-    scores = [e.confidence for e in entities] + [c.confidence for c in result.icd10_suggestions]
-    return sum(scores) / len(scores) if scores else 0.0
+    return confidence.overall_confidence(entities, result.icd10_suggestions)
 
 
 def _benchmark_framework(

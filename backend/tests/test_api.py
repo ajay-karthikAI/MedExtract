@@ -24,6 +24,23 @@ def test_models_lists_all_frameworks():
         assert m["status"] in {"placeholder", "available"}
 
 
+def test_stateless_extract_returns_dictionary_normalized_names():
+    res = client.post(
+        "/api/extract",
+        json={"text": "PMH: HTN and DM2. Reports SOB. Given Lasix. EKG ordered."},
+    )
+
+    assert res.status_code == 200
+    body = res.json()
+    assert {e["normalized"] for e in body["conditions"]} == {
+        "hypertension",
+        "type 2 diabetes mellitus",
+    }
+    assert {e["normalized"] for e in body["symptoms"]} == {"shortness of breath"}
+    assert {e["normalized"] for e in body["medications"]} == {"furosemide"}
+    assert {e["normalized"] for e in body["procedures"]} == {"electrocardiogram"}
+
+
 def test_analyze_note_rejects_unknown_framework():
     res = client.post("/analyze-note", json={"note": "x", "framework": "keras"})
     assert res.status_code == 422

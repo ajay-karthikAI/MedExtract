@@ -2,17 +2,20 @@
 persist request + response, and expose the model registry and analysis history.
 """
 
+import logging
 from typing import Literal
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, selectinload
 
 from app import models, schemas
 from app.database import get_db
-from app.services import documents, pipelines
+from app.services import confidence, documents, pipelines
 
 router = APIRouter(tags=["analyze"])
+logger = logging.getLogger(__name__)
 
 FRAMEWORKS: tuple[schemas.Framework, ...] = ("pytorch", "tensorflow", "jax")
 
@@ -24,13 +27,6 @@ def _group_entities(entities: list[schemas.EntityOut]) -> schemas.EntityGroups:
     for e in entities:
         getattr(groups, e.category + "s").append(e)
     return groups
-
-
-def _overall_confidence(
-    entities: list[schemas.EntityOut], icd_codes: list[schemas.Icd10Out]
-) -> float:
-    scores = [e.confidence for e in entities] + [c.confidence for c in icd_codes]
-    return round(sum(scores) / len(scores), 3) if scores else 0.0
 
 
 def _preview(body: str) -> str:
@@ -45,7 +41,12 @@ def _analyze_and_persist(
     title: str | None = None,
     source: str = "api",
 ) -> schemas.AnalyzeResponse:
-    result = pipelines.extract(text, framework)
+    try:
+        result = pipelines.extract(text, framework)
+    except Exception as exc:
+        logger.exception("Analysis failed before persistence")
+        raise HTTPException(status_code=500, detail="Analysis failed. Please try again.") from exc
+
     model_used = result.model_name
     entities = result.conditions + result.symptoms + result.medications + result.procedures
 
@@ -60,15 +61,23 @@ def _analyze_and_persist(
         ext.entities.append(models.Entity(**entity.model_dump()))
     for icd in result.icd10_suggestions:
         ext.icd10_suggestions.append(models.Icd10Suggestion(**icd.model_dump()))
-    db.add_all([note, ext])
-    db.commit()
+    try:
+        db.add_all([note, ext])
+        db.commit()
+    except SQLAlchemyError as exc:
+        db.rollback()
+        logger.exception("Could not persist analysis")
+        raise HTTPException(
+            status_code=500,
+            detail="Analysis completed but could not be saved. Please try again.",
+        ) from exc
 
     return schemas.AnalyzeResponse(
         entities=_group_entities(entities),
         icd_codes=result.icd10_suggestions,
         patient_summary=result.patient_summary,
         model_used=model_used,
-        confidence=_overall_confidence(entities, result.icd10_suggestions),
+        confidence=confidence.overall_confidence(entities, result.icd10_suggestions),
     )
 
 
@@ -128,7 +137,7 @@ def history(limit: int = 20, offset: int = 0, db: Session = Depends(get_db)):
                 icd_codes=icd_codes,
                 patient_summary=ext.summary,
                 model_used=ext.model_name,
-                confidence=_overall_confidence(entities, icd_codes),
+                confidence=confidence.overall_confidence(entities, icd_codes),
             )
         )
     return items

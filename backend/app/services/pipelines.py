@@ -11,6 +11,7 @@ import sys
 from threading import Lock
 
 from app.schemas import ExtractionResult, Framework, ModelInfo
+from app.services import entity_extraction
 from app.services import extraction as rule_based
 from app.services.paths import ml_dir as resolve_ml_dir
 
@@ -21,14 +22,14 @@ _ML_PIPELINES: dict[str, tuple[str, str]] = {
     "pytorch": (
         "pytorch_pipeline.inference",
         "Transformer NER via Hugging Face token classification (CPU). "
-        "Fine-tune with ml/pytorch_pipeline/train.py; ICD-10 suggestion is "
-        "still a dictionary placeholder.",
+        "Fine-tune with ml/pytorch_pipeline/train.py; backend services rebuild "
+        "ICD-10 suggestions, summaries, and confidence from entity evidence.",
     ),
     "tensorflow": (
         "tensorflow_pipeline.inference",
         "Keras note-category classifier + lexicon entity extraction with "
         "model-assisted confidence. Train with ml/tensorflow_pipeline/train.py; "
-        "ICD-10 suggestion is still a dictionary placeholder.",
+        "backend services rebuild ICD-10 suggestions and summaries from entity evidence.",
     ),
     "jax": (
         "jax_pipeline.inference",
@@ -72,10 +73,42 @@ def extract(text: str, framework: Framework) -> ExtractionResult:
     _load(framework)
     module = _loaded.get(framework)
     if module is not None:
-        return ExtractionResult.model_validate(module.extract(text))
+        try:
+            model_payload = module.extract(text)
+            groups = entity_extraction.extract_with_model_payload(text, model_payload)
+            model_name = _model_name(module, model_payload)
+            return rule_based.build_result(groups, model_name=model_name)
+        except (TypeError, ValueError) as exc:
+            logger.warning(
+                "%s pipeline returned an invalid result, using rule-based fallback: %s",
+                framework,
+                exc,
+            )
+        except Exception as exc:
+            logger.exception(
+                "%s pipeline failed during extraction, using rule-based fallback: %s",
+                framework,
+                exc,
+            )
     result = rule_based.extract(text)
     result.model_name = f"{framework}-{rule_based.MODEL_NAME}"
     return result
+
+
+def _model_name(module: object, model_payload: object) -> str:
+    if isinstance(model_payload, dict):
+        payload_name = model_payload.get("model_name")
+    else:
+        payload_name = getattr(model_payload, "model_name", None)
+    if payload_name and payload_name != rule_based.MODEL_NAME:
+        return str(payload_name)
+    model_name = getattr(module, "model_name", None)
+    if callable(model_name):
+        try:
+            return str(model_name())
+        except Exception:
+            logger.exception("Could not read model name from loaded pipeline")
+    return rule_based.MODEL_NAME
 
 
 def model_info(framework: Framework) -> ModelInfo:
